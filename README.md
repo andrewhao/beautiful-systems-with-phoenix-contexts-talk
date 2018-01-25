@@ -12,6 +12,18 @@ Today, we’ll learn about the philosophical roots of Bounded Contexts from the 
 
     $ ruby -run -e httpd . -p 8080
 
+## LiveReload
+
+Load LiveReload in your browser, then run:
+
+    $ bundle exec guard
+
+## Compiling styles
+
+Sass is used to compile styles in `styles` from SCSS to CSS:
+
+    $ bundle exec sass --watch styles:styles/css
+
 ## Prior Art & Helpful Resources
 
 * Brandolini, Alberto. ["Strategic Domain Driven Design with Context Mapping"](https://www.infoq.com/articles/ddd-contextmapping)

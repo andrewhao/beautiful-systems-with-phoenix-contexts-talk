@@ -1,0 +1,119 @@
+$background-color: #f9c58e;
+$text-color: #213060;
+$code-background-color: #fdf6e3;
+$carbonfive-background-color: #404040;
+$link-color: #084887;
+$h2-color: #084887;
+$h1-color: #ff900a;
+$h3-color: #f03a47;
+
+body {
+  font-family: "Nunito Sans", sans-serif;
+  text-rendering: optimizeLegibility;
+  zoom: 150%;
+  font-size: 16px;
+}
+h1,
+h2,
+h3 {
+  font-family: "Lato", "Nunito Sans", sans-serif;
+  font-weight: 900;
+  line-height: 1em;
+}
+h4 {
+  /*font-family: 'Fira Mono', serif;*/
+  /*border-bottom: 1px solid #6E6362;*/
+  /*font-style: italic;*/
+}
+.remark-code,
+.remark-inline-code {
+  font-family: "Fira Mono", "Fira Code", "Ubuntu Mono";
+  font-size: 1em;
+  line-height: 1.2em;
+}
+.remark-code {
+  margin: 0 -2em;
+}
+.remark-slide-content {
+  font-size: 2em;
+  line-height: 1.428em;
+  background-size: cover !important;
+  padding: 1em 2em;
+  background-color: $background-color;
+  color: $text-color;
+}
+.remark-slide-content.background-color-code {
+  background-color: $code-background-color;
+}
+.remark-slide-content.background-color-carbonfive {
+  background-color: $carbonfive-background-color;
+}
+.remark-slide-content p {
+  font-size: 1.15em;
+}
+.remark-slide-content h1 {
+  color: $h1-color;
+  font-size: 4em;
+  line-height: 1em;
+  margin: 0;
+}
+.remark-slide-content h2 {
+  color: $h2-color;
+  font-size: 2em;
+}
+a,
+a:link,
+a:visited,
+a:active {
+  color: $link-color;
+}
+.remark-slide-content h3 {
+  color: $h3-color;
+  font-size: 1.6em;
+}
+.remark-slide-number {
+  /* Don't show slide numbers */
+  display: none;
+  font-family: "Fira Mono", "Fira Code", "Ubuntu Mono", monospace;
+  font-size: 0.5em;
+}
+
+.background-image-contain {
+  background-size: contain !important;
+}
+.small-code .remark-code {
+  font-size: 0.8em;
+}
+.xsmall-code .remark-code {
+  font-size: 0.7em;
+}
+.background-white {
+  background-color: white;
+}
+.white-text {
+  color: white;
+}
+
+table {
+  border: 1px solid gray;
+  border-collapse: collapse;
+}
+th,
+td {
+  text-align: left;
+  border: 1px solid gray;
+  padding: 0.3em 0.5em;
+}
+@page {
+  size: 1440px 810px;
+  margin: 0;
+}
+@media print {
+  .remark-slide-scaler {
+    width: 100% !important;
+    height: 100% !important;
+    transform: scale(1) !important;
+    top: 0 !important;
+    left: 0 !important;
+  }
+}
