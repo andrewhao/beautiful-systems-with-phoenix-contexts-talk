@@ -1,11 +1,13 @@
-$background-color: #f9c58e;
-$text-color: #213060;
-$code-background-color: #fdf6e3;
+// https://coolors.co/dee7ed-4b00b5-23185e-4392f1-dc493a
+
+$background-color: #dee7ed;
+$code-background-color: #ebf8ff;
 $carbonfive-background-color: #404040;
+$text-color: #23185e;
 $link-color: #084887;
-$h2-color: #084887;
-$h1-color: #ff900a;
-$h3-color: #f03a47;
+$h1-color: #4392f1;
+$h2-color: #dc493a;
+$h3-color: #4b00b5;
 
 body {
   font-family: "Nunito Sans", sans-serif;
@@ -73,7 +75,7 @@ a:active {
 }
 .remark-slide-number {
   /* Don't show slide numbers */
-  display: none;
+  // display: none;
   font-family: "Fira Mono", "Fira Code", "Ubuntu Mono", monospace;
   font-size: 0.5em;
 }

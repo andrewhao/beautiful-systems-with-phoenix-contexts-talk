@@ -28,7 +28,7 @@ class: middle center
 
 ### Today I want to to answer the question:
 
-__What are Contexts, and how should I use them?__
+**What are Contexts, and how should I use them?**
 
 ---
 
@@ -44,7 +44,7 @@ ok so microservices? hang on...
 
 Complex systems are hard to grow
 
-- not without introducing intermediary organization structures.
+* not without introducing intermediary organization structures.
 
 ---
 
@@ -72,12 +72,11 @@ What does it do?
 
 But wait, not so fast.
 
-- What should I name the context?
-- How do I know if it's too broad (coarse) or too specific (fine)?
-- Where are good module boundaries to draw?
+* What should I name the context?
+* How do I know if it's too broad (coarse) or too specific (fine)?
+* Where are good module boundaries to draw?
 
 ---
-
 
 If only we had a set of criteria to understand how to decompose our systems!
 
@@ -89,13 +88,12 @@ class: middle
 
 ### Information hiding
 
-[*D.L. Parnas - "On the Criteria to Be Used in Decomposing Systems into Modules"*](https://www.cs.umd.edu/class/spring2003/cmsc838p/Design/criteria.pdf)
+[_D.L. Parnas - "On the Criteria to Be Used in Decomposing Systems into Modules"_](https://www.cs.umd.edu/class/spring2003/cmsc838p/Design/criteria.pdf)
 
 ???
 
 So I went looking for some inspiration, and learned about Parnas' work
 about modularization in the 1970s, words that stand still today.
-
 
 ---
 
@@ -104,7 +102,6 @@ class: middle center background-image-contain background-white
 background-image: url(images/parnas-paper.png)
 
 ???
-
 
 In this paper, he took a look at a program that did text processing and
 compared two approaches - one that divided up its processing
@@ -160,11 +157,11 @@ Where do those difficult design decisions come from, within our company?
 
 ---
 
-- Marketing wants us to change copy on the web site
-- Finance wants us to change how we do tax calculations per transaction
-- Operations wants us to build a new shipment tracking system
-- Product wants to implement a new integration with Vendor XYZ
-- Customer support wants us to build a better support dashboard
+* Marketing wants us to change copy on the web site
+* Finance wants us to change how we do tax calculations per transaction
+* Operations wants us to build a new shipment tracking system
+* Product wants to implement a new integration with Vendor XYZ
+* Customer support wants us to build a better support dashboard
 
 ---
 
@@ -191,7 +188,7 @@ DDD is both a set of high-level strategic design activities and concrete softwar
 
 It can be very confusing as it's got a lot of concepts and
 enterprise-speak. Today, we're going to pick and choose a few specific
-activities and patterns to outline and apply here 
+activities and patterns to outline and apply here
 
 ---
 
@@ -310,9 +307,13 @@ Even more ideally, it should be closely aligned with your organization structure
 
 ---
 
-Context: a module with a public interface. it reveals data to callers---
+class: background-color-code
+
+#### Context: a module with a public interface. it reveals data to callers---
 
 ```elixir
+defmodule Inspection do
+end
 Inspection.fetch_vehicle(...)
 Identity.fetch_user(...)
 ```
@@ -320,7 +321,6 @@ Identity.fetch_user(...)
 ---
 
 ...but also allows callers to perform state-changing actions inside of its boundaries.
-
 
 ```elixir
 Scheduling.create_appointment(...)
