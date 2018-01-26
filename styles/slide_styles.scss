@@ -5,9 +5,13 @@ $code-background-color: #ebf8ff;
 $carbonfive-background-color: #404040;
 $text-color: #23185e;
 $link-color: #084887;
-$h1-color: #4392f1;
-$h2-color: #dc493a;
+$h1-color: #dc493a;
+$h2-color: #4b00b5;
 $h3-color: #4b00b5;
+$h4-color: #4392f1;
+$h1-font-size: 3.5em;
+
+@import "book-tilt-effect";
 
 body {
   font-family: "Nunito Sans", sans-serif;
@@ -23,7 +27,7 @@ h3 {
   line-height: 1em;
 }
 h4 {
-  /*font-family: 'Fira Mono', serif;*/
+  color: $h4-color;
   /*border-bottom: 1px solid #6E6362;*/
   /*font-style: italic;*/
 }
@@ -55,7 +59,7 @@ h4 {
 }
 .remark-slide-content h1 {
   color: $h1-color;
-  font-size: 4em;
+  font-size: $h1-font-size;
   line-height: 1em;
   margin: 0;
 }

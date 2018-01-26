@@ -4,6 +4,8 @@ class: middle
 
 #### Phoenix Contexts and Domain-Driven Design
 
+<br />
+
 Andrew Hao [@andrewhao](https://www.twitter.com/andrewhao)
 
 <img src="images/c5-logo-white.svg" alt="Carbon Five" style="float: right; margin-top: -10px;" height="75" />
@@ -24,59 +26,148 @@ class: middle center background-color-carbonfive
 
 ---
 
-class: middle center
+class: middle
 
-### Today I want to to answer the question:
+#### Today's question
 
-**What are Contexts, and how should I use them?**
+### What are contexts, and how do I use them effectively?
 
----
+???
 
-Large software systems can get messy.
-
-coupling. slow. failed tests.
+What are contexts? After all, they can be confusing. We've got this organization tool, but how do we create and use them effectively?
 
 ---
 
-ok so microservices? hang on...
+#### Complexity is hard
+
+### Large software systems can get messy.
+
+--
+coupling.
+
+--
+
+slow.
+
+--
+
+hidden dependencies.
+
+--
+
+can't keep it in your head.
+
+???
+
+As you may be well aware, large systems are difficult to grow and maintain.
 
 ---
 
-Complex systems are hard to grow
+### Complex systems are hard to grow
 
 * not without introducing intermediary organization structures.
 
+--
+
+Science shows we can keep everything between four to seven things in memory at once!
+
+At certain point, you need to introduce abstraction layers
+
 ---
 
-Oh, I know! Phoenix gives us contexts! I'll organize my code in Contexts!
+### Beautiful systems are well-organized
+
+Loosely-coupled, cohesive units
+
+---
+
+class: middle center
+
+### ok so microservices?
+
+whoa there! hang on...
+
+???
+
+So maybe a couple of years ago during the peak of the microservices hype cycle, we would automatically think to ourselves, oh great, let's make a microservice!
+
+But maybe it wasn't such a great idea. Because with microservices, you get extra complexity...
+
+---
+
+background-image: url(/images/niklas-hamann-418782.jpg)
+
+???
+
+And that complexity makes things very sad.
+
+---
+
+class: middle center
+
+Oh, I know! Phoenix gives us contexts!
+
+I'll organize my code in Contexts!
+
+???
+
+Well the great thing is that with Phoenix we get this natural organization structure in the context.
 
 ---
 
 class: middle
 
-### Phoenix Contexts
+#### From on high 👾
+
+## Phoenix Contexts
 
 Thanks, Chris!
 
-From on high!
+???
+
+Contexts dropped from the sky in Phoenix 1.3
 
 ---
 
-### How does it work?
+### How do contexts work?
 
-What does it do?
+Modules that organize like functionality together
 
-❓
+By default, Phoenix apps get a `Web` context and another blank context for everything else.
+
+???
+
+In many ways, contexts are simple concepts. They're just modules that package subsystems together.
 
 ---
 
-But wait, not so fast.
+### But wait, not so fast.
 
 * What should I name the context?
 * How do I know if it's too broad (coarse) or too specific (fine)?
 * Where are good module boundaries to draw?
 
+???
+
+Lots of questions remain. What are effective ways of organizing my code?
+
+And as it turns out, this same set of questions that plagues us with contexts is the exact same set of questions that plague us when we turned to microservices a few years ago.
+
+Where do we draw the boundaries?
+
 ---
+
+class: middle
+
+#### Same basic question
+
+### Where do we draw system boundaries?
+
+---
+
+class: middle center
+
+# 🤔💭
 
 If only we had a set of criteria to understand how to decompose our systems!
 
@@ -139,9 +230,15 @@ today.
 
 ---
 
-## From software program to the entire system
+class: middle center
 
-Where are the difficult design decisions in this company that are likely to change?
+Where are the
+
+## difficult design decisions
+
+that are
+
+## likely to change?
 
 ???
 
@@ -157,17 +254,46 @@ Where do those difficult design decisions come from, within our company?
 
 ---
 
+### Your business is a driver for change
+
 * Marketing wants us to change copy on the web site
+
+--
+
 * Finance wants us to change how we do tax calculations per transaction
+
+--
+
 * Operations wants us to build a new shipment tracking system
+
+--
+
 * Product wants to implement a new integration with Vendor XYZ
+
+--
+
 * Customer support wants us to build a better support dashboard
 
 ---
 
 class: middle center
 
-<img alt="Domain-Driven Design Book Cover" src="images/ddd-book-cover.jpg" />
+### Huh! The key to building beautiful systems is understanding your business partner(s)
+
+---
+
+class: middle center
+name: ddd_book_intro
+
+<div class="bookWrap">
+<div class="book">
+<img class="cover" alt="Domain-Driven Design Book Cover" src="images/ddd-book-cover.jpg" />
+<div class="spine"></div>
+</div>
+</div>
+<script>
+console.log('here');
+</script>
 
 ???
 
@@ -192,11 +318,19 @@ activities and patterns to outline and apply here
 
 ---
 
+class: middle
+
+#### Summarized:
+
+### Effective software design requires linguistic clarity
+
+---
+
 ## Today:
 
 We will build a **Context Map** and use it to introduce DDD concepts
 
-We will learn what Phoenix contexts are and how to best use them
+We will learn what **Phoenix contexts** are and how to best use them
 
 We will learn some **refactoring patterns** we can use to shape our
 systems
@@ -424,3 +558,4 @@ class: middle
 * Parnas, D.L. ["On the Criteria To Be Used in Decomposing Systems into Modules"](http://www.cs.umd.edu/class/spring2003/cmsc838p/Design/criteria.pdf).
 * Vernon, Vaughan. [Implementing Domain-Driven Design](https://www.amazon.com/Implementing-Domain-Driven-Design-Vaughn-Vernon/dp/0321834577).
 * W. P. Stevens ; G. J. Myers ; L. L. Constantine. ["Structured Design"](http://ieeexplore.ieee.org/document/5388187/) - IBM Systems Journal, Vol 13 Issue 2, 1974.
+* Steinegger, Giessler, Hippchen, Abeck. [Overview of a Domain-Driven Design Approach to Build Microservice-Based Applications](https://cm.tm.kit.edu/download/domain_driven_microservice-architecture_17-03-15.pdf)

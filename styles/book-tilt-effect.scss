@@ -1,0 +1,62 @@
+$book-background-color: #1fbad9;
+$book-cover-height: 516px;
+$book-cover-width: 390px;
+
+.bookWrap {
+  margin: 25px auto;
+  height: $book-cover-height;
+  width: $book-cover-width;
+
+  position: relative;
+  -webkit-perspective: 1200px;
+  -moz-perspective: 1200px;
+  perspective: 1200px;
+}
+
+.book {
+  background: $book-background-color;
+  height: $book-cover-height;
+  width: $book-cover-width;
+  position: absolute;
+  left: 16px;
+  top: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease 0s;
+  border-radius: 0 7px 7px 0;
+  perspective: 1200px;
+}
+
+.bookIntro {
+  transform: rotateY(30deg);
+}
+
+.cover {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: $book-cover-width;
+  max-width: $book-cover-width;
+  max-height: $book-cover-height;
+  backface-visibility: hidden;
+  border-radius: 0 4px 4px 0;
+  transition: transform 0.5s ease 0s, width 0.5s ease 0s;
+  transform-origin: 0;
+}
+
+.cover:hover {
+  width: 210px;
+  transform: rotateY(-20deg);
+}
+
+.spine {
+  background: $book-background-color;
+  width: 40px;
+  height: $book-cover-height - 2;
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  transform: rotateY(90deg);
+  transform-origin: 0;
+}
