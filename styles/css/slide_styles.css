@@ -83,25 +83,23 @@ h4 {
   padding: 1em 2em;
   background-color: #dee7ed;
   color: #23185e; }
-
-.remark-slide-content.background-color-code {
-  background-color: #ebf8ff; }
-
-.remark-slide-content.background-color-carbonfive {
-  background-color: #404040; }
-
-.remark-slide-content p {
-  font-size: 1.15em; }
-
-.remark-slide-content h1 {
-  color: #dc493a;
-  font-size: 3.5em;
-  line-height: 1em;
-  margin: 0; }
-
-.remark-slide-content h2 {
-  color: #4b00b5;
-  font-size: 2em; }
+  .remark-slide-content.background-color-code {
+    background-color: #ebf8ff; }
+  .remark-slide-content.background-color-carbonfive {
+    background-color: #404040; }
+  .remark-slide-content p {
+    font-size: 1.15em; }
+  .remark-slide-content h1 {
+    color: #dc493a;
+    font-size: 3.5em;
+    line-height: 1em;
+    margin: 0; }
+  .remark-slide-content h2 {
+    color: #4b00b5;
+    font-size: 2em; }
+  .remark-slide-content h3 {
+    color: #4b00b5;
+    font-size: 1.6em; }
 
 a,
 a:link,
@@ -109,14 +107,13 @@ a:visited,
 a:active {
   color: #084887; }
 
-.remark-slide-content h3 {
-  color: #4b00b5;
-  font-size: 1.6em; }
-
 .remark-slide-number {
   /* Don't show slide numbers */
   font-family: "Fira Mono", "Fira Code", "Ubuntu Mono", monospace;
   font-size: 0.5em; }
+
+.hide-slide-number .remark-slide-number {
+  display: none; }
 
 .background-image-contain {
   background-size: contain !important; }
