@@ -1,4 +1,4 @@
-class: middle
+class: middle hide-slide-number
 
 # Building beautiful systems
 
@@ -103,9 +103,21 @@ And that complexity makes things very sad.
 
 ---
 
+class: middle
+
+### How about an umbrella app?
+
+--
+
+You could, still have a lot of ceremony, but what if there were yet a smaller step?
+
+???
+
+---
+
 class: middle center
 
-Oh, I know! Phoenix gives us contexts!
+### Oh, I know! Contexts!
 
 I'll organize my code in Contexts!
 
@@ -138,6 +150,12 @@ By default, Phoenix apps get a `Web` context and another blank context for every
 ???
 
 In many ways, contexts are simple concepts. They're just modules that package subsystems together.
+
+If you use an app generator in Phoenix, you'll get a Web context for free out of the box. The creators meant for us to think about this Web context as all the requirements necessary to deal with the request-response cycle
+
+---
+
+TBD image diagram of Web context here...
 
 ---
 
@@ -254,24 +272,28 @@ Where do those difficult design decisions come from, within our company?
 
 ---
 
+### Introducing VehiclePro
+
+A marketplace for car sellers.
+
+Bring your car in for an inspection, then list it on our website!
+
+---
+
 ### Your business is a driver for change
 
 * Marketing wants us to change copy on the web site
 
 --
-
-* Finance wants us to change how we do tax calculations per transaction
-
---
-
-* Operations wants us to build a new shipment tracking system
+* Finance wants us to change how we do tax calculations on a car sale by region
 
 --
+* Operations wants us to build a new vehicle inventory system
 
+--
 * Product wants to implement a new integration with Vendor XYZ
 
 --
-
 * Customer support wants us to build a better support dashboard
 
 ---
@@ -320,9 +342,13 @@ activities and patterns to outline and apply here
 
 class: middle
 
-#### Summarized:
+#### Summarized 📸
 
-### Effective software design requires linguistic clarity
+### Design your software systems according to your business domains
+
+Also:
+
+#### Pay attention to the language you speak in the business
 
 ---
 
@@ -332,8 +358,8 @@ We will build a **Context Map** and use it to introduce DDD concepts
 
 We will learn what **Phoenix contexts** are and how to best use them
 
-We will learn some **refactoring patterns** we can use to shape our
-systems
+<!-- We will learn some **refactoring patterns** we can use to shape our -->
+<!-- systems -->
 
 ---
 
@@ -435,9 +461,23 @@ A context is a self-contained system. A module!
 
 ---
 
+A system that "hides information"
+
+???
+
 In other words, it should be a part of the system that "hides information" about the specific responsibilities it has been given.
 
+---
+
+Matches your organization structure?
+
+???
+
 Even more ideally, it should be closely aligned with your organization structure. For example, the Marketing domain may surface the code required to implement the microsite or landing page experiments.
+
+---
+
+Let's start simple: one module for each context.
 
 ---
 
@@ -454,6 +494,8 @@ Identity.fetch_user(...)
 
 ---
 
+class: background-color-code
+
 ...but also allows callers to perform state-changing actions inside of its boundaries.
 
 ```elixir
@@ -467,6 +509,8 @@ SaleFinalization.process_electronic_payment(...)
 Prefer coarse contexts to fine contexts.
 
 You can optimize, extract later
+
+???
 
 (Counter to Elixir docs)
 
@@ -494,7 +538,7 @@ GenServer.start_link()
 
 ---
 
-Concept: Aggregate Root
+#### Concept: Aggregate Root 
 
 Minimize the data you pass around. Return a tree data structure of data that logically belongs together.
 
@@ -526,15 +570,53 @@ Don't!
 
 Use Mox to implement context mocks
 
+???
+
 Thanks to coworker Hannah for this idea.
 
 ---
 
-...Mox examples
+For example, we are testing that the Inspection context needs to fetch up a User.
+
+In an old world, we might have used Ecto to pick something up from the repo.
+
+However, in DDD we factored this back behind a different context, so we wire this up with a Mox mock in our test:
 
 ---
 
-class: middle
+class: background-color-code
+
+```elixir
+defmodule Inspection
+  def log_inspection() do
+    # ...
+    Identity.get_user(user_id)
+    |> do_something()
+    |> # ...
+  end
+end
+```
+
+---
+
+class: background-color-code
+
+```elixir
+# in test
+defmodule Inspection.Test do
+  setup do
+  end
+
+  test "it uses the User to perform an inspection" do
+    expect(Identity.Mock)
+    |> receive(:get_user)
+  end
+end
+```
+
+---
+
+class: middle hide-slide-number
 
 ## Thanks!
 
