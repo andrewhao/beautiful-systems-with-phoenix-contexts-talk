@@ -155,6 +155,25 @@ If you use an app generator in Phoenix, you'll get a Web context for free out of
 
 ---
 
+### Here's what Phoenix wants you to do:
+
+Generate new resources with generators to see what they do:
+
+`mix phx.gen.context MyContext MyResource`
+`mix phx.gen.html MyContext MyResource`
+`mix phx.gen.json MyContext MyResource`
+
+etc...
+
+---
+
+You get:
+
+- A controller for MyResource in `web/` (because Web is for web!)
+- CRUD actions to create your MyResource entity in the MyContext module
+
+---
+
 TBD image diagram of Web context here...
 
 ---
@@ -516,6 +535,14 @@ You can optimize, extract later
 
 ---
 
+Opinion: Avoid cross-context joins if you can
+
+Do you need to do so? If so, go for it.
+
+If you can avoid it, you should.
+
+---
+
 The beauty of Elixir is communicating between contexts:
 
 In-process synchronous communication?
@@ -616,6 +643,40 @@ end
 
 ---
 
+#### Miscellany
+
+### How do I deal with concepts that live in between boundaries?
+
+---
+
+
+#### Miscellany
+
+### How do I deal with dependencies between boundaries?
+
+Avoid DB joins, as those couple your contexts together.
+
+Utilize aggregate roots
+
+---
+
+Suggested organization structure:
+
+```
+foo_context/
+  behaviour.ex
+  foo_context.ex
+  foo_entity.ex
+  foo_bar_entity.ex
+```
+
+```
+foo_context/
+  foo_mock.exs
+```
+
+---
+
 class: middle hide-slide-number
 
 ## Thanks!
@@ -641,3 +702,4 @@ class: middle hide-slide-number
 * Vernon, Vaughan. [Implementing Domain-Driven Design](https://www.amazon.com/Implementing-Domain-Driven-Design-Vaughn-Vernon/dp/0321834577).
 * W. P. Stevens ; G. J. Myers ; L. L. Constantine. ["Structured Design"](http://ieeexplore.ieee.org/document/5388187/) - IBM Systems Journal, Vol 13 Issue 2, 1974.
 * Steinegger, Giessler, Hippchen, Abeck. [Overview of a Domain-Driven Design Approach to Build Microservice-Based Applications](https://cm.tm.kit.edu/download/domain_driven_microservice-architecture_17-03-15.pdf)
+* Rob Martin - Perhap: Applying DDD and Reactive Architectures: https://www.youtube.com/watch?list=PLqj39LCvnOWZMVugtyKlHMF1o2zPNntFL&time_continue=5&v=kq4qTk18N-c
