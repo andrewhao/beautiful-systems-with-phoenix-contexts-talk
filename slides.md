@@ -25,10 +25,10 @@ class: middle center background-color-carbonfive
 
 ---
 
-class: center middle
+class: center
 
 #### .left[Axiom #1 🔮]
-## Maintaining large systems is difficult*
+# Maintaining large systems is difficult*
 
 --
 #### * like, super mega difficult
@@ -52,10 +52,10 @@ As you may be well aware, large systems are difficult to grow and maintain.
 
 ---
 
-class: center middle
+class: center
 
 #### .left[Axiom #2 🔮]
-## Complex systems are not intentionally messy*
+# Complex systems are not intentionally messy*
 
 --
 #### * for the most part
@@ -159,6 +159,28 @@ system later.
 Sounds obvious, right? This paper eventually got the discussion rolling
 into the design principles which we call "High Cohesion, Loose Coupling"
 today.
+
+---
+
+## Define: coupling
+
+(illustration)
+
+---
+
+## Define: cohesion
+
+(illustration)
+
+---
+
+#### To recap
+
+## Modules should:
+
+- hide information that's likely to change
+- group like concepts together
+- seek to minimize dependencies on the outside world
 
 ---
 
@@ -287,7 +309,7 @@ class: middle
 
 #### Same basic question
 
-### Where do we draw system boundaries?
+### How do we choose system boundaries?
 
 
 ---
@@ -360,7 +382,7 @@ Bring your car in for an inspection, then list it on our website!
 
 class: middle center
 
-### Huh! The key to building beautiful systems is understanding your business partner(s)
+# Listen to the business
 
 ---
 
@@ -385,9 +407,23 @@ class: middle
 
 ## Introducing Domain-Driven Design
 
-Published by Eric Evans in 2003
+Authored by Eric Evans in 2003
 
-DDD is both a set of high-level strategic design activities and concrete software patterns
+---
+
+class: middle
+
+### DDD is both: 
+
+**High-level strategic design activities**
+
+and
+
+**Concrete software patterns**
+
+--
+
+Don't get tripped up!
 
 ???
 
@@ -472,6 +508,30 @@ dedicated engineering staff.
 
 ---
 
+class: center middle
+
+# Listen to the business*
+
+#### *Literally, listen :ear:
+
+---
+
+## Ubiquitous Language
+
+The terms the business speaks within each domain!
+
+Put these in a **Glossary**
+
+---
+
+## What to do with your Ubiquitious Language
+
+Speak about them consistently in the team
+Use terms consistently in the code
+Keep terms updated together
+
+---
+
 #### Definition! 📖
 
 ### Bounded Context
@@ -489,6 +549,8 @@ different concepts, and hence different Ubiqutious Languages.
 ## Bounded Contexts allow for precise language
 
 Your domains may use conflicting, overloaded terms with nuances depending on context
+
+Embrace it!
 
 --
 
@@ -623,9 +685,15 @@ class: background-color-code
 
 ```elixir
 defmodule Inspection do
+  def get_vehicle() do
+  end
+
+  def get_customer() do
+  end
+
+  def get_mechanic() do
+  end
 end
-Inspection.fetch_vehicle(...)
-Identity.fetch_user(...)
 ```
 
 ---
@@ -635,10 +703,15 @@ class: background-color-code
 ...but also allows callers to perform state-changing actions inside of its boundaries.
 
 ```elixir
-Scheduling.create_appointment(...)
-Identity.create_session(...)
-SaleFinalization.process_electronic_payment(...)
+defmodule Inspection do
+  def rate_vehicle(rating) do
+  end
+end
 ```
+
+---
+
+
 
 ---
 
@@ -652,7 +725,53 @@ You can optimize, extract later
 
 ---
 
-Opinion: Avoid cross-context joins if you can
+```elixir
+# User has many inspections
+Repo.get_by(User, id: 1)
+|> Repo.preload(:inspections)
+```
+
+???
+
+In the past we may have been tempted to cross-join our domains
+
+---
+
+```elixir
+Identity.get_user(1)
+|> Inspection.fetch_inspections_for_user()
+```
+
+Or they can convert concepts between each other:
+
+
+```elixir
+def customer_for_user(user) do
+  user
+  |> Map.from_struct() # Transform to a bare map
+  |> transform_keys()  # Convert to the format
+  |> (&struct(Inspection.Customer, &1)).() # stuff it into the domain model
+end
+```
+
+```elixir
+Identity.get_user(1)
+|> Inspection.get_customer_for_user()
+|> Inspection.fetch_inspections()
+```
+
+---
+
+## Convert incoming data to internal concepts
+
+This is known as an **Anti-Corruption Layer**
+
+But don't get too hung up on it. Use it when it's important and the nuances are important
+to capture.
+
+---
+
+## Opinion: Avoid cross-context joins if you can
 
 Do you need to do so? If so, go for it.
 
