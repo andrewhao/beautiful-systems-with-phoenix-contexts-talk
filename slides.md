@@ -4,7 +4,6 @@ class: middle hide-slide-number
 
 #### Phoenix Contexts and Domain-Driven Design
 
-<br />
 
 Andrew Hao [@andrewhao](https://www.twitter.com/andrewhao)
 
@@ -26,36 +25,26 @@ class: middle center background-color-carbonfive
 
 ---
 
-class: middle
+class: center middle
 
-#### Today's question
+#### .left[Axiom #1 🔮]
+## Maintaining large systems is difficult*
 
-### What are contexts, and how do I use them effectively?
+--
+#### * like, super mega difficult
 
 ???
 
-What are contexts? After all, they can be confusing. We've got this organization tool, but how do we create and use them effectively?
+As you might know, a good portion of our professional lives as programmers is spent chasing the dragons of complexity
 
 ---
 
-#### Complexity is hard
-
 ### Large software systems can get messy.
 
---
-coupling.
-
---
-
-slow.
-
---
-
-hidden dependencies.
-
---
-
-can't keep it in your head.
+- tight coupling
+- concepts with low cohesion - spaghetti code
+- hidden dependencies.
+- can't keep it in your head.
 
 ???
 
@@ -63,11 +52,37 @@ As you may be well aware, large systems are difficult to grow and maintain.
 
 ---
 
-### Complex systems are hard to grow
+class: center middle
 
-* not without introducing intermediary organization structures.
+#### .left[Axiom #2 🔮]
+## Complex systems are not intentionally messy*
 
 --
+#### * for the most part
+
+---
+
+### The bulk of complexity is accidental
+
+Let's ship things fast! 😧
+
+--
+
+Death by a thousand cuts
+
+--
+
+Abstractions that might work for small systems can't scale when the system grows.
+
+---
+
+class: middle center
+
+#### The solution?
+
+### Intermediate organization structures
+
+???
 
 Science shows we can keep everything between four to seven things in memory at once!
 
@@ -75,130 +90,10 @@ At certain point, you need to introduce abstraction layers
 
 ---
 
-### Beautiful systems are well-organized
-
-Loosely-coupled, cohesive units
-
----
-
-class: middle center
-
-### ok so microservices?
-
-whoa there! hang on...
-
-???
-
-So maybe a couple of years ago during the peak of the microservices hype cycle, we would automatically think to ourselves, oh great, let's make a microservice!
-
-But maybe it wasn't such a great idea. Because with microservices, you get extra complexity...
-
----
-
-background-image: url(/images/niklas-hamann-418782.jpg)
-
-???
-
-And that complexity makes things very sad.
-
----
-
 class: middle
+## But!
 
-### How about an umbrella app?
-
---
-
-You could, still have a lot of ceremony, but what if there were yet a smaller step?
-
-???
-
----
-
-class: middle center
-
-### Oh, I know! Contexts!
-
-I'll organize my code in Contexts!
-
-???
-
-Well the great thing is that with Phoenix we get this natural organization structure in the context.
-
----
-
-class: middle
-
-#### From on high 👾
-
-## Phoenix Contexts
-
-Thanks, Chris!
-
-???
-
-Contexts dropped from the sky in Phoenix 1.3
-
----
-
-### How do contexts work?
-
-Modules that organize like functionality together
-
-By default, Phoenix apps get a `Web` context and another blank context for everything else.
-
-???
-
-In many ways, contexts are simple concepts. They're just modules that package subsystems together.
-
-If you use an app generator in Phoenix, you'll get a Web context for free out of the box. The creators meant for us to think about this Web context as all the requirements necessary to deal with the request-response cycle
-
----
-
-### Here's what Phoenix wants you to do:
-
-Generate new resources with generators to see what they do:
-
-`mix phx.gen.context MyContext MyResource`
-`mix phx.gen.html MyContext MyResource`
-`mix phx.gen.json MyContext MyResource`
-
-etc...
-
----
-
-You get:
-
-- A controller for MyResource in `web/` (because Web is for web!)
-- CRUD actions to create your MyResource entity in the MyContext module
-
----
-
-TBD image diagram of Web context here...
-
----
-
-### But wait, not so fast.
-
-* What should I name the context?
-* How do I know if it's too broad (coarse) or too specific (fine)?
-* Where are good module boundaries to draw?
-
-???
-
-Lots of questions remain. What are effective ways of organizing my code?
-
-And as it turns out, this same set of questions that plagues us with contexts is the exact same set of questions that plague us when we turned to microservices a few years ago.
-
-Where do we draw the boundaries?
-
----
-
-class: middle
-
-#### Same basic question
-
-### Where do we draw system boundaries?
+- Where do I draw boundaries between my abstractions?
 
 ---
 
@@ -267,6 +162,152 @@ today.
 
 ---
 
+class: middle
+
+#### From on high 👾
+
+## Phoenix Contexts
+
+Thanks, Chris!
+
+???
+
+Contexts dropped from the sky in Phoenix 1.3
+
+---
+
+class: middle
+### How do contexts work?
+
+They're just modules!
+
+???
+
+In many ways, contexts are simple concepts. They're just modules that package subsystems together.
+
+---
+
+### Here's what Phoenix wants you to do:
+
+Generate new resources with generators to see what they do:
+
+```
+mix phx.gen.context Identity User
+mix phx.gen.html Identity User
+mix phx.gen.json Identity User
+```
+
+etc...
+
+---
+
+### Phoenix contexts, out of the box:
+
+- A `UserController` controller for User in `web/` (because Web is for web!)
+- CRUD actions to create your User entity in the `Identity` module
+
+---
+
+```elixir
+# lib/my_app_web/controllers/user_controller.ex
+defmodule MyApp.UserController do
+  ...
+end
+```
+
+```elixir
+# lib/my_app/identity/identity.ex
+defmodule MyApp.Identity do
+  def get_user(id) do
+    # ...
+  end
+end
+```
+
+---
+
+### Out of the box, the Phoenix way:
+
+All web concerns live in `MyAppWeb` context.
+
+???
+
+The `Web` context is for anything that deals with the HTTP request/response cycle.
+Headers, cookies, you name it.
+
+---
+
+### Out of the box, the Phoenix way:
+
+However, application business domain logic should live in contexts.
+
+???
+
+So here we create an Identity domain, and it's responsibility is to encapsulate business domain operations around how to model and store User entities (and maybe other things that have to do with Identity as well - OAuth credentials, for instance)
+
+---
+
+### Out of the box, the Phoenix way:
+
+And remember that 
+
+---
+
+class: background-color-code middle
+
+```
+           +-------------------+
+           | MyApp.Web         |  +---------------------+
+           | +-------------+   |  |                     |
+HTTP  -->  | | Domain      +------+ MyApp.DomainContext |
+Request    | | Controller  |   |  |                     |
+           | +-------------+   |  +---------------------+
+           +-------------------+
+```
+
+---
+
+### But wait, not so fast.
+
+* What should I name the context?
+* How do I know if it's too broad (coarse) or too specific (fine)?
+* Where are good module boundaries to draw?
+
+???
+
+Lots of questions remain. What are effective ways of organizing my code?
+
+And as it turns out, this same set of questions that plagues us with contexts is the exact same set of questions that plague us when we turned to microservices a few years ago.
+
+Where do we draw the boundaries?
+
+---
+
+class: middle
+
+#### Same basic question
+
+### Where do we draw system boundaries?
+
+
+---
+
+class: middle
+
+Typically, we think of this in terms of horizontal layers of abstractions
+
+---
+
+class: middle center
+
+# But!
+
+---
+
+What if we thought about vertically decomposed business use cases?
+
+---
+
 class: middle center
 
 Where are the
@@ -332,9 +373,6 @@ name: ddd_book_intro
 <div class="spine"></div>
 </div>
 </div>
-<script>
-console.log('here');
-</script>
 
 ???
 
@@ -373,14 +411,93 @@ Also:
 
 ## Today:
 
+Let's define some DDD concepts: **Domain**, **Subdomain**, and a **Bounded Context**
+
 We will build a **Context Map** and use it to introduce DDD concepts
 
-We will learn what **Phoenix contexts** are and how to best use them
-
-<!-- We will learn some **refactoring patterns** we can use to shape our -->
-<!-- systems -->
+We will see what it looks like to grow and evolve a system with Phoenix contexts
 
 ---
+
+#### Definition! 📖
+
+### Core domain
+
+The **Core Domain** is the primary area of focus of your business
+
+--
+
+VehiclePro Core Domain: **Car Sales**
+
+???
+
+Now we're going to get into the nitty gritty of DDD - really elucidating
+what defines our domain boundaries. Every software system generally
+serves to fulfill its purpose in a certain operational category.
+
+Here at VehiclePro, we focus on used car sales. If we aren't selling used cars, this company has really lost sight of its long term vision!
+
+---
+
+#### Definition! 📖
+
+### Supporting domains
+
+A **Supporting Domain** (or Subdomain) are the areas of the business
+that play roles in making the **Core Domain** happen.
+
+--
+* **Online Listings** (put the car on the website)
+
+--
+* **Financial Transactions** (charge the buyer, pay the seller)
+
+--
+* **Optimization & Analytics** (track business metrics)
+
+--
+* **Customer Support** (keep people happy)
+
+???
+
+Now a subdomain is anything that supports the core domain. These are
+ancillary functions, but important to help the business do its core
+thing properly.
+
+See anything interesting here? Most likely, these domains have a company
+unit devoted to them.
+
+In many companies, each of these organizational units have their own
+dedicated engineering staff.
+
+---
+
+#### Definition! 📖
+
+### Bounded Context
+
+- Concretely: a software system (like a codebase or running application)
+- Linguistically: a delineation in your domain where concepts are "bounded", or contained
+
+???
+
+Remember, this is because we agreed that different domains may have
+different concepts, and hence different Ubiqutious Languages.
+
+---
+
+## Bounded Contexts allow for precise language
+
+Your domains may use conflicting, overloaded terms with nuances depending on context
+
+--
+
+Bounded contexts allow these conflicting concepts to coexist
+
+
+---
+
+
 
 ### Context mapping
 
