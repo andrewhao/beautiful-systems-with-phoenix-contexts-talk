@@ -91,100 +91,6 @@ At certain point, you need to introduce abstraction layers
 ---
 
 class: middle
-## But!
-
-- Where do I draw boundaries between my abstractions?
-
----
-
-class: middle center
-
-# 🤔💭
-
-If only we had a set of criteria to understand how to decompose our systems!
-
----
-
-class: middle
-
-#### A blast from the past 🕰
-
-### Information hiding
-
-[_D.L. Parnas - "On the Criteria to Be Used in Decomposing Systems into Modules"_](https://www.cs.umd.edu/class/spring2003/cmsc838p/Design/criteria.pdf)
-
-???
-
-So I went looking for some inspiration, and learned about Parnas' work
-about modularization in the 1970s, words that stand still today.
-
----
-
-class: middle center background-image-contain background-white
-
-background-image: url(images/parnas-paper.png)
-
-???
-
-In this paper, he took a look at a program that did text processing and
-compared two approaches - one that divided up its processing
-responsibilities by its procedural components, do A, B, then C, and
-another one that was responsible for the individual design decisions to
-do various things like scan for words, storing data in internal data
-structures, etc.
-
-It might go without saying, but the second one was found much more
-flexible and elegant. He said that the second way allowed the user to
-change internal decisions like how lines were stored in memory or on
-disk in a particular data structure would require minimal changes,
-whereas in the first, if you changed the data structure backing the word
-list you'd have to change several modules.
-
----
-
-class: middle
-
-"We propose instead that one begins with a **list of difficult design decisions** or **design decisions which are likely to change**.
-
-"Each module is then designed to **hide such a decision from the others.**" (Emphasis added)
-
-???
-
-His point was that modules need to hide away minute implementation
-details from other modules - things that are likely to change! Where you
-draw the boundaries in your system matters, because they allow you to
-flexibly change your approach without messing with other parts of the
-system later.
-
-Sounds obvious, right? This paper eventually got the discussion rolling
-into the design principles which we call "High Cohesion, Loose Coupling"
-today.
-
----
-
-## Define: coupling
-
-(illustration)
-
----
-
-## Define: cohesion
-
-(illustration)
-
----
-
-#### To recap
-
-## Modules should:
-
-- hide information that's likely to change
-- group like concepts together
-- seek to minimize dependencies on the outside world
-
----
-
-class: middle
 
 #### From on high 👾
 
@@ -199,13 +105,32 @@ Contexts dropped from the sky in Phoenix 1.3
 ---
 
 class: middle
-### How do contexts work?
 
-They're just modules!
+## What are contexts?
+
+Elixir modules that group system functionality by business domain
+
+---
+
+class: middle
+
+### Design goal: High cohesion
+
+Concepts that belong together are likely to change together as a unit
 
 ???
 
 In many ways, contexts are simple concepts. They're just modules that package subsystems together.
+
+---
+
+class: middle
+
+### Design goal: Loose coupling
+
+Contexts have minimal dependencies on external systems (like HTTP, Plug, etc)
+
+Contexts hide implementation details from external callers (like Ecto schemas)
 
 ---
 
@@ -226,7 +151,7 @@ etc...
 ### Phoenix contexts, out of the box:
 
 - A `UserController` controller for User in `web/` (because Web is for web!)
-- CRUD actions to create your User entity in the `Identity` module
+- A set of CRUD functions to create your User entity in the `Identity` module
 
 ---
 
@@ -443,6 +368,7 @@ Also:
 
 #### Pay attention to the language you speak in the business
 
+
 ---
 
 ## Today:
@@ -452,6 +378,42 @@ Let's define some DDD concepts: **Domain**, **Subdomain**, and a **Bounded Conte
 We will build a **Context Map** and use it to introduce DDD concepts
 
 We will see what it looks like to grow and evolve a system with Phoenix contexts
+
+---
+
+class: center middle
+
+# Listen to the business*
+
+#### *Literally, listen :ear:
+
+
+---
+
+### Context mapping
+
+An exercise to help us develop deeper insights around what concepts are at play in our organization, and our systems.
+
+--
+
+Nouns
+
+Verbs
+
+---
+
+Diagram
+
+---
+
+### Context Mapping
+
+...is an activity to be done IRL!
+
+Get domain experts together in the room
+
+It should be interactive. Everyone should be talking
+
 
 ---
 
@@ -473,8 +435,8 @@ serves to fulfill its purpose in a certain operational category.
 
 Here at VehiclePro, we focus on used car sales. If we aren't selling used cars, this company has really lost sight of its long term vision!
 
----
 
+---
 #### Definition! 📖
 
 ### Supporting domains
@@ -508,11 +470,7 @@ dedicated engineering staff.
 
 ---
 
-class: center middle
-
-# Listen to the business*
-
-#### *Literally, listen :ear:
+You might not see these yet, but your diagram may tell you:
 
 ---
 
@@ -556,30 +514,6 @@ Embrace it!
 
 Bounded contexts allow these conflicting concepts to coexist
 
-
----
-
-
-
-### Context mapping
-
-An exercise to help us develop deeper insights around what concepts are at play in our organization, and our systems.
-
---
-
-Nouns
-
-Verbs
-
----
-
-### Context Mapping
-
-...is an activity to be done IRL!
-
-Get domain experts together in the room
-
-It should be interactive. Everyone should be talking
 
 ---
 
@@ -681,7 +615,7 @@ Let's start simple: one module for each context.
 
 class: background-color-code
 
-#### Context: a module with a public interface. it reveals data to callers---
+##### Context: a module with a public interface.
 
 ```elixir
 defmodule Inspection do
@@ -700,18 +634,81 @@ end
 
 class: background-color-code
 
-...but also allows callers to perform state-changing actions inside of its boundaries.
+##### ...but also allows callers to perform state-changing actions inside of its boundaries.
 
 ```elixir
 defmodule Inspection do
-  def rate_vehicle(rating) do
+  def rate_vehicle(vehicle_id, rating) do
   end
 end
 ```
 
 ---
 
+class: background-color-code
 
+##### Let's look at some code in our web app that handles a vehicle rating:
+
+```elixir
+defmodule MyApp.VehicleInspectionScoreController do
+  def update
+    user = Repo.get_by(User, user_id)
+
+    inspection_score = Repo.get_by(Vehicle, vehicle_id)
+    |> Repo.preload(:inspection_score)
+    |> InspectionScorePolicy.editable_by?(user)
+    |> InspectionScore.changeset(%{score: new_score})
+    |> Repo.insert!()
+
+    render conn, "show.html", inspection_score: inspection_score
+  end
+end
+```
+
+???
+
+Imagine a User -> Vehicle -> InspectionScore
+
+
+---
+
+class: background-color-code
+
+##### First pass: we drew our context map. Follow it:
+
+```elixir
+defmodule MyApp.VehicleInspectionScoreController do
+  def update
+    Identity.get_user(user_id)
+    |> Inspection.update_inspection_score_for_user(
+         vehicle_id,
+         %{score: new_score}
+       )
+    render conn, "show.html", inspection_score: inspection_score
+  end
+end
+```
+
+---
+
+class: background-color-code
+
+##### Push the code back into your context
+
+```elixir
+defmodule Inspection do
+  def update_inspection_score_for_user(user, vehicle_id, new_score)
+    with :ok <- Inspection.ScorePolicy.editable_by?(user) do
+      Repo.get_by(Vehicle, vehicle_id)
+      |> Repo.preload(:inspection_score)
+      |> Inspection.Score.changeset(new_score)
+      |> Repo.insert!()
+    else
+      # ...
+    end
+  end
+end
+```
 
 ---
 
@@ -804,6 +801,55 @@ GenServer.start_link()
 #### Concept: Aggregate Root 
 
 Minimize the data you pass around. Return a tree data structure of data that logically belongs together.
+
+---
+
+DON'T
+
+```elixir
+defmodule Inspection do
+  def get_vehicle()
+  end
+
+  def get_vehicle_rating()
+  end
+end
+```
+
+---
+
+DO
+
+```elixir
+defmodule Inspection do
+  def get_vehicle()
+  end
+end
+
+# => %Vehicle{rating: %Rating{}}
+```
+
+---
+
+DON'T
+
+```elixir
+defmodule Inspection do
+  def update_rating(rating_id, new_rating)
+  end
+end
+```
+
+---
+
+DO
+
+```elixir
+defmodule Inspection do
+  def update_rating(vehicle_id, new_rating)
+  end
+end
+```
 
 ---
 
