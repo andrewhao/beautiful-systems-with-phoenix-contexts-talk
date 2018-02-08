@@ -94,9 +94,7 @@ class: middle
 
 #### From on high 👾
 
-## Phoenix Contexts
-
-Thanks, Chris!
+# Phoenix Contexts
 
 ???
 
@@ -134,48 +132,82 @@ Contexts hide implementation details from external callers (like Ecto schemas)
 
 ---
 
-### Here's what Phoenix wants you to do:
+class: background-color-code
 
-Generate new resources with generators to see what they do:
+### Follow the scaffold
 
+Create a `User` resource in the `Identity` context
+
+```bash
+$ mix phx.gen.html Identity User users \
+    name:string password:string
 ```
-mix phx.gen.context Identity User
-mix phx.gen.html Identity User
-mix phx.gen.json Identity User
-```
-
-etc...
 
 ---
 
-### Phoenix contexts, out of the box:
+class: background-color-code
 
-- A `UserController` controller for User in `web/` (because Web is for web!)
-- A set of CRUD functions to create your User entity in the `Identity` module
-
----
-
-```elixir
-# lib/my_app_web/controllers/user_controller.ex
-defmodule MyApp.UserController do
-  ...
-end
-```
+### Domain resource operations in the context
 
 ```elixir
 # lib/my_app/identity/identity.ex
 defmodule MyApp.Identity do
-  def get_user(id) do
-    # ...
+  def get_user!(id), do: ...
+  def create_user(attrs \\ %{}) do: ...
+  def update_user(%User{} = user, attrs) do: ...
+  def delete_user(%User{} = user) do: ...
+end
+```
+
+---
+
+class: background-color-code
+
+### Web controller for the resource
+
+```elixir
+# lib/my_app_web/controllers/user_controller.ex
+defmodule MyApp.UserController do
+  def index(conn, _params) do
+    users = Identity.list_users()
+    render(conn, "index.html", users: users)
+  end
+
+  def show(conn, %{"id" => id}) do
+    user = Identity.get_user!(id)
+    render(conn, "show.html", user: user)
   end
 end
 ```
 
 ---
 
-### Out of the box, the Phoenix way:
+class: background-color-code
+
+### Migration for Ecto persistence
+
+```elixir
+defmodule Babygenius.Repo.Migrations.CreateUsers do
+  def change do
+    create table(:users) do
+      add :name, :string
+      add :password, :string
+
+      timestamps()
+    end
+  end
+end
+```
+
+---
+
+### Contexts, the Phoenix way:
 
 All web concerns live in `MyAppWeb` context.
+
+--
+
+Domain logic lives in its own context(s)
 
 ???
 
@@ -184,37 +216,7 @@ Headers, cookies, you name it.
 
 ---
 
-### Out of the box, the Phoenix way:
-
-However, application business domain logic should live in contexts.
-
-???
-
-So here we create an Identity domain, and it's responsibility is to encapsulate business domain operations around how to model and store User entities (and maybe other things that have to do with Identity as well - OAuth credentials, for instance)
-
----
-
-### Out of the box, the Phoenix way:
-
-And remember that 
-
----
-
-class: background-color-code middle
-
-```
-           +-------------------+
-           | MyApp.Web         |  +---------------------+
-           | +-------------+   |  |                     |
-HTTP  -->  | | Domain      +------+ MyApp.DomainContext |
-Request    | | Controller  |   |  |                     |
-           | +-------------+   |  +---------------------+
-           +-------------------+
-```
-
----
-
-### But wait, not so fast.
+### Furthermore, unanswered questions
 
 * What should I name the context?
 * How do I know if it's too broad (coarse) or too specific (fine)?
