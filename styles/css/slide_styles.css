@@ -49,6 +49,9 @@
   transform: rotateY(90deg);
   transform-origin: 0; }
 
+.hljs {
+  background: #dee7ed !important; }
+
 body {
   font-family: "Nunito Sans", sans-serif;
   text-rendering: optimizeLegibility;
@@ -84,7 +87,7 @@ h4 {
   background-color: #dee7ed;
   color: #23185e; }
   .remark-slide-content.background-color-code {
-    background-color: #ebf8ff; }
+    background-color: #dee7ed; }
   .remark-slide-content.background-color-carbonfive {
     background-color: #404040; }
   .remark-slide-content p {

@@ -1,7 +1,7 @@
 // https://coolors.co/dee7ed-4b00b5-23185e-4392f1-dc493a
 
 $background-color: #dee7ed;
-$code-background-color: #ebf8ff;
+$code-background-color: $background-color;
 $carbonfive-background-color: #404040;
 $text-color: #23185e;
 $link-color: #084887;
@@ -12,6 +12,10 @@ $h4-color: #4392f1;
 $h1-font-size: 3.5em;
 
 @import "book-tilt-effect";
+
+.hljs {
+  background: $code-background-color !important;
+}
 
 body {
   font-family: "Nunito Sans", sans-serif;

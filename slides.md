@@ -39,19 +39,6 @@ As you might know, a good portion of our professional lives as programmers is sp
 
 ---
 
-### Large software systems can get messy.
-
-- tight coupling
-- concepts with low cohesion - spaghetti code
-- hidden dependencies.
-- can't keep it in your head.
-
-???
-
-As you may be well aware, large systems are difficult to grow and maintain.
-
----
-
 class: center
 
 #### .left[Axiom #2 🔮]
@@ -80,7 +67,9 @@ class: middle center
 
 #### The solution?
 
-### Intermediate organization structures
+# Abstractions
+
+a.k.a. modularization, or encapsulation
 
 ???
 
@@ -90,9 +79,19 @@ At certain point, you need to introduce abstraction layers
 
 ---
 
+## Today:
+
+We will:
+
+- Introduce **Phoenix contexts**
+- Build a **Context Map** and use it to introduce Domain-Driven Design concepts
+- Apply our learnings in code!
+
+---
+
 class: middle
 
-#### From on high 👾
+#### Thanks core team! 👾
 
 # Phoenix Contexts
 
@@ -110,21 +109,23 @@ Elixir modules that group system functionality by business domain
 
 ---
 
-class: middle
+class: middle center
 
-### Design goal: High cohesion
+# High cohesion
 
 Concepts that belong together are likely to change together as a unit
 
-???
-
-In many ways, contexts are simple concepts. They're just modules that package subsystems together.
-
 ---
 
-class: middle
+class: middle center
 
-### Design goal: Loose coupling
+# Loose coupling
+
+Minimal dependencies on external systems
+
+Hide implementation details to outside callers
+
+???
 
 Contexts have minimal dependencies on external systems (like HTTP, Plug, etc)
 
@@ -140,7 +141,7 @@ Create a `User` resource in the `Identity` context
 
 ```bash
 $ mix phx.gen.html Identity User users \
-    name:string password:string
+    name:string email:string
 ```
 
 ---
@@ -187,14 +188,31 @@ class: background-color-code
 ### Migration for Ecto persistence
 
 ```elixir
-defmodule Babygenius.Repo.Migrations.CreateUsers do
+defmodule MyApp.Repo.Migrations.CreateUsers do
   def change do
     create table(:users) do
       add :name, :string
-      add :password, :string
+      add :email, :string
 
       timestamps()
     end
+  end
+end
+```
+
+---
+
+class: background-color-code
+
+### Ecto schema
+
+```elixir
+defmodule MyApp.User do
+  use Ecto.Schema
+
+  schema "users" do
+    field :name, :string
+    field :email, :string
   end
 end
 ```
@@ -205,111 +223,49 @@ end
 
 All web concerns live in `MyAppWeb` context.
 
---
-
-Domain logic lives in its own context(s)
-
 ???
 
 The `Web` context is for anything that deals with the HTTP request/response cycle.
 Headers, cookies, you name it.
 
----
+--
 
-### Furthermore, unanswered questions
-
-* What should I name the context?
-* How do I know if it's too broad (coarse) or too specific (fine)?
-* Where are good module boundaries to draw?
+Contexts encapsulate persistence and domain logic
 
 ???
 
-Lots of questions remain. What are effective ways of organizing my code?
-
-And as it turns out, this same set of questions that plagues us with contexts is the exact same set of questions that plague us when we turned to microservices a few years ago.
-
-Where do we draw the boundaries?
-
----
-
-class: middle
-
-#### Same basic question
-
-### How do we choose system boundaries?
-
-
----
-
-class: middle
-
-Typically, we think of this in terms of horizontal layers of abstractions
+Contexts are responsible for the implementation details of business logic.
 
 ---
 
 class: middle center
 
-# But!
-
----
-
-What if we thought about vertically decomposed business use cases?
+# I have a few questions
 
 ---
 
 class: middle center
 
-Where are the
-
-## difficult design decisions
-
-that are
-
-## likely to change?
-
-???
-
-Even though Parnas' paper looked at a single program and attempted to
-rethink its division of labor from flow to responsibility, I want to
-zoom out and apply this to our entire business system.
-
-Where do those difficult design decisions come from, within our company?
-
---
-
-#### Within the business groups that generate them!
-
----
-
-### Introducing VehiclePro
-
-A marketplace for car sellers.
-
-Bring your car in for an inspection, then list it on our website!
-
----
-
-### Your business is a driver for change
-
-* Marketing wants us to change copy on the web site
-
---
-* Finance wants us to change how we do tax calculations on a car sale by region
-
---
-* Operations wants us to build a new vehicle inventory system
-
---
-* Product wants to implement a new integration with Vendor XYZ
-
---
-* Customer support wants us to build a better support dashboard
+## What should I name the context?
 
 ---
 
 class: middle center
 
-# Listen to the business
+## How should I think about resources that are needed in multiple contexts?
+
+---
+
+class: middle center
+
+## How do I know if it's too broad (coarse) or too specific (fine)?
+
+---
+
+class: middle center
+
+# How do we design system boundaries?
+
 
 ---
 
@@ -330,9 +286,9 @@ Design.
 
 ---
 
-class: middle
+class: middle center
 
-## Introducing Domain-Driven Design
+# Domain-Driven Design
 
 Authored by Eric Evans in 2003
 
@@ -362,24 +318,78 @@ activities and patterns to outline and apply here
 
 class: middle
 
-#### Summarized 📸
+#### Usually, we reach for
 
-### Design your software systems according to your business domains
+## Horizontal layers of abstractions
 
-Also:
-
-#### Pay attention to the language you speak in the business
-
+* Web layer
+* Domain layer
+* Persistence layer
 
 ---
 
-## Today:
+class: middle center
 
-Let's define some DDD concepts: **Domain**, **Subdomain**, and a **Bounded Context**
+# Bigger picture
 
-We will build a **Context Map** and use it to introduce DDD concepts
+---
 
-We will see what it looks like to grow and evolve a system with Phoenix contexts
+class: middle
+
+#### Let's think in terms of
+
+## Vertically decomposed business use cases
+
+---
+
+## Welcome to AutoMaxx!
+
+A used-car marketplace
+
+Sellers bring their cars in for an inspection and appraisal at our stores, where we buy their vehicle.
+
+Interested buyers test drive cars in our lot, purchasing them if they are interested.
+
+???
+
+AutoMaxx is a two-sided marketplace
+
+---
+
+### Your business is constantly changing
+
+* Marketing wants us to change copy on the web site
+
+--
+* Finance wants us to change how we do tax calculations on a car sale by region
+
+--
+* Operations wants us to build a new feature in the vehicle inventory system
+
+--
+* Product has a new initiative to offer purchase transactions in Bitcoin
+
+--
+* Customer support wants us to build a better support dashboard
+
+---
+
+class: middle center
+
+# Listen to the business
+
+---
+
+class: middle
+
+#### DDD, summarized 📸
+
+### Design your software systems according to your business domains
+
+by:
+
+#### Paying attention to the language you speak in the business
+
 
 ---
 
@@ -396,15 +406,37 @@ class: center middle
 
 An exercise to help us develop deeper insights around what concepts are at play in our organization, and our systems.
 
---
+---
 
-Nouns
+### Get everyone in a room
 
-Verbs
+Put up on a wall all the:
+
+**Nouns** - entities
+
+**Verbs** - events
 
 ---
 
 Diagram
+
+---
+
+### Context Mapping
+
+Group like concepts and actions together.
+
+There may be overlaps - that's OK if your concepts belong in multiple groups.
+
+More important to just get it down.
+
+---
+
+### Context Mapping
+
+Take a step back.
+
+PNG grouped stickies screenshot
 
 ---
 
@@ -427,7 +459,7 @@ The **Core Domain** is the primary area of focus of your business
 
 --
 
-VehiclePro Core Domain: **Car Sales**
+AutoMaxx Core Domain: **Car Sales**
 
 ???
 
@@ -435,7 +467,7 @@ Now we're going to get into the nitty gritty of DDD - really elucidating
 what defines our domain boundaries. Every software system generally
 serves to fulfill its purpose in a certain operational category.
 
-Here at VehiclePro, we focus on used car sales. If we aren't selling used cars, this company has really lost sight of its long term vision!
+Here at AutoMaxx, we focus on used car sales. If we aren't selling used cars, this company has really lost sight of its long term vision!
 
 
 ---
@@ -523,44 +555,6 @@ Aside: this is important shared vocabulary.
 
 Write this vocabulary down and put it in a Glossary.
 
----
-
-It might look like this:
-
-PNG physical whiteboard
-
----
-
-Or it might look like this:
-
-PNG stickies
-
----
-
-### Context Mapping
-
-Group like concepts and actions together.
-
-There may be overlaps - that's OK if your concepts belong in multiple groups.
-
-More important to just get it down.
-
----
-
-### Context Mapping
-
-Take a step back.
-
-PNG grouped stickies screenshot
-
----
-
-This activity is closely related to a few other activities:
-
-Domain modeling
-Event Storming
-Story Mapping
-
 --
 
 Answering: what happens to what entities in the system?
@@ -595,22 +589,6 @@ A context is a self-contained system. A module!
 
 ---
 
-A system that "hides information"
-
-???
-
-In other words, it should be a part of the system that "hides information" about the specific responsibilities it has been given.
-
----
-
-Matches your organization structure?
-
-???
-
-Even more ideally, it should be closely aligned with your organization structure. For example, the Marketing domain may surface the code required to implement the microsite or landing page experiments.
-
----
-
 Let's start simple: one module for each context.
 
 ---
@@ -624,7 +602,7 @@ defmodule Inspection do
   def get_vehicle() do
   end
 
-  def get_customer() do
+  def get_owner() do
   end
 
   def get_mechanic() do
@@ -647,22 +625,26 @@ end
 
 ---
 
-class: background-color-code
+class: background-color-code small-code
 
 ##### Let's look at some code in our web app that handles a vehicle rating:
 
 ```elixir
 defmodule MyApp.VehicleInspectionScoreController do
-  def update
+  def update do
     user = Repo.get_by(User, user_id)
-
-    inspection_score = Repo.get_by(Vehicle, vehicle_id)
-    |> Repo.preload(:inspection_score)
-    |> InspectionScorePolicy.editable_by?(user)
-    |> InspectionScore.changeset(%{score: new_score})
-    |> Repo.insert!()
-
-    render conn, "show.html", inspection_score: inspection_score
+    with vehicle <-
+           Repo.get_by(Vehicle, vehicle_id)
+           |> Repo.preload(:inspection_score),
+         :ok <- InspectionScorePolicy.editable_by?(user) do
+      inspection_score =
+        vehicle.inspection_score
+        |> InspectionScore.changeset(%{score: new_score})
+        |> Repo.insert!()
+      render(conn, "show.html", inspection_score: inspection_score)
+    else
+      render(conn, "error.html", message: "Oops!")
+    end
   end
 end
 ```
@@ -674,26 +656,28 @@ Imagine a User -> Vehicle -> InspectionScore
 
 ---
 
-class: background-color-code
-
-##### First pass: we drew our context map. Follow it:
+class: background-color-code small-code middle
 
 ```elixir
 defmodule MyApp.VehicleInspectionScoreController do
-  def update
-    Identity.get_user(user_id)
-    |> Inspection.update_inspection_score_for_user(
-         vehicle_id,
-         %{score: new_score}
-       )
-    render conn, "show.html", inspection_score: inspection_score
+  # Refactor into modules
+  def update do
+    with user <- Identity.get_user(user_id),
+         vehicle <- Inspection.get_vehicle(vehicle_id),
+         {:ok, score} <- Inspection.update_inspection_score_for_user(
+           vehicle, user, %{score: new_score}
+         ) do
+      render(conn, "show.html", inspection_score: score)
+    else
+      render(conn, "error.html", message: "Oops!")
+    end
   end
 end
 ```
 
 ---
 
-class: background-color-code
+class: background-color-code small-code
 
 ##### Push the code back into your context
 
