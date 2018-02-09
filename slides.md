@@ -402,13 +402,17 @@ class: center middle
 
 ---
 
-### Context mapping
+class: middle
 
-An exercise to help us develop deeper insights around what concepts are at play in our organization, and our systems.
+## Context mapping
+
+An exercise to help us **discover all the concepts** living in our **organization**, and our systems.
 
 ---
 
-### Get everyone in a room
+#### Context Mapping
+
+## Get everyone in a room
 
 Put up on a wall all the:
 
@@ -422,9 +426,9 @@ Diagram
 
 ---
 
-### Context Mapping
+#### Context Mapping
 
-Group like concepts and actions together.
+## Group like concepts and actions together.
 
 There may be overlaps - that's OK if your concepts belong in multiple groups.
 
@@ -432,22 +436,21 @@ More important to just get it down.
 
 ---
 
-### Context Mapping
+#### Context Mapping
 
-Take a step back.
+## Take a step back.
 
 PNG grouped stickies screenshot
 
 ---
 
-### Context Mapping
+#### Context Mapping
 
-...is an activity to be done IRL!
+## Let the business lead
 
-Get domain experts together in the room
+Listen to the words and terms they use
 
-It should be interactive. Everyone should be talking
-
+People should be talking
 
 ---
 
@@ -784,71 +787,172 @@ Or: Double Trouble
 
 ---
 
-A `User` needs to 
+class: middle center
+
+### What happens when we need to use a `User` in a different context?
 
 ---
 
-Prefer coarse contexts to fine contexts.
+### Listen to the business!
 
-You can optimize, extract later
+**`Identity` domain**: `User`
 
-???
+**`Inspection` domain**: `Owner`, `Mechanic`
 
-(Counter to Elixir docs)
-
----
-
-```elixir
-# User has many inspections
-Repo.get_by(User, id: 1)
-|> Repo.preload(:inspections)
-```
-
-???
-
-In the past we may have been tempted to cross-join our domains
+**`Marketing` domain**: `Visitor`
 
 ---
 
+### A few options:
+
+1. **Struct Conversion**: convert to internal concepts at the boundaries with pure structs
+
+--
+1. **Peer Concept**: Create an internal concept persisted in Ecto, then create a reference to the external concept
+
+--
+1. ~~**Double Trouble**: Use an overlapping internal Ecto schema over the external Ecto schema~~
+
+--
+1. **Nothing**: Just use it directly, as-is*
+
+---
+
+#### Sharing Concepts
+
+## Struct Conversion
+
+Convert external concepts to internal concepts
+
+Useful for **Read-Only** use cases
+
+---
+
+##### Convert a `Identity.User` to a `Marketing.Visitor`
+
 ```elixir
-Identity.get_user(1)
-|> Inspection.fetch_inspections_for_user()
-```
+defmodule AutoMaxx.Marketing.Visitor do
+  defstruct [:handle, :uuid]
+end
 
-Or they can convert concepts between each other:
-
-
-```elixir
-def customer_for_user(user) do
-  user
-  |> Map.from_struct() # Transform to a bare map
-  |> transform_keys()  # Convert to the format
-  |> (&struct(Inspection.Customer, &1)).() # stuff it into the domain model
+defmodule AutoMaxx.Marketing do
+  def visitor_for_user(%AutoMaxx.Identity.User{} = user) do
+    new_mapping = user
+      |> Map.from_struct()
+      |> Map.delete(:email)
+      |> Map.put(:contact, user.email)
+    struct(AutoMaxx.Marketing.Visitor, new_mapping)
+  end
 end
 ```
 
-```elixir
-Identity.get_user(1)
-|> Inspection.get_customer_for_user()
-|> Inspection.fetch_inspections()
-```
-
 ---
 
-## Convert incoming data to internal concepts
+#### Sharing Concepts
+
+## Struct Conversion
 
 This is known as an **Anti-Corruption Layer**
+
+???
 
 But don't get too hung up on it. Use it when it's important and the nuances are important
 to capture.
 
+
 ---
 
-## Opinion: Avoid cross-context joins if you can
+class: small-code
 
-Do you need to do so? If so, go for it.
+```elixir
+defmodule AutoMaxx.Marketing.AnalyticsController do
+  def create(conn, %{user_id: user_id, payload: payload}) do
+    Identity.get_user(user_id)
 
-If you can avoid it, you should.
+    # Convert the concept at the boundaries
+    |> Marketing.visitor_for_user()
+
+    # Then proceed to perform the domain action 
+    |> Marketing.fire_analytics_event_to_google(%{payload: payload})
+  end
+end
+```
+
+---
+
+### Yay Types!
+
+Here we see the powers of pattern matching!
+
+Reject types that do not match your internal concepts
+
+Even better - leverage the powers of typespecs.
+
+---
+
+#### Sharing Concepts
+
+## (Persisted) Peer Concept
+
+Useful for **Read+Write** use cases
+
+--
+```elixir
+defmodule AutoMaxx.Inspection.Mechanic do
+  schema "mechanics" do
+    field :is_contractor, :boolean
+    field :certification, :string
+    belongs_to :user, AutoMaxx.Identity.User
+  end
+end
+```
+
+---
+
+class: small-code middle
+
+```elixir
+defmodule AutoMaxx.Inspection do
+  def create_mechanic_from_user(
+        %AutoMaxx.Identity.User{} = user,
+        is_contractor
+      ) do
+    %AutoMaxx.Inspection.Mechanic{
+      is_contractor: is_contractor,
+      user: user
+    }
+    |> Repo.insert!()
+  end
+
+  def mechanic_for_user(user) do
+    Repo.get_by(AutoMaxx.Inspection.Mechanic, user_id: user.id)
+  end
+end
+```
+
+---
+
+#### Just My Opinion :tm:
+
+### Avoid cross-context joins if you can
+
+```elixir
+defmodule AutoMaxx.Marketing.Visitor do:
+  schema "marketing_visitors" do:
+    belongs_to :user, AutoMaxx.Identity.User
+```
+--
+Instead, store them as external references
+
+```elixir
+    field :user_id, :string
+    field :user_id, :uuid
+```
+???
+
+This decouples our two domains.
+
+This prevents our
 
 ---
 
@@ -1001,9 +1105,14 @@ end
 
 ---
 
-#### Miscellany
+## Prefer coarse contexts to fine contexts.
 
-### How do I deal with concepts that live in between boundaries?
+You can optimize, extract later
+
+???
+
+(Counter to Elixir docs)
+
 
 ---
 

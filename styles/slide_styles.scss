@@ -32,8 +32,13 @@ h3 {
   line-height: 1em;
 }
 
+h2 {
+  margin: 0.75em 0;
+}
+
 h4 {
   color: $h4-color;
+  margin: 1rem 0;
 
   /*border-bottom: 1px solid #6E6362;*/
   /*font-style: italic;*/
