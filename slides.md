@@ -7,7 +7,9 @@ class: middle hide-slide-number
 
 Andrew Hao [@andrewhao](https://www.twitter.com/andrewhao)
 
-<img src="images/c5-logo-white.svg" alt="Carbon Five" style="float: right; margin-top: -10px;" height="75" />
+<br />
+
+<img src="images/c5-logo-vertical.png" alt="Carbon Five" style="float: right;" height="75" />
 
 ---
 
@@ -296,7 +298,7 @@ Authored by Eric Evans in 2003
 
 class: middle
 
-### DDD is both: 
+### DDD is both:
 
 **High-level strategic design activities**
 
@@ -342,7 +344,7 @@ class: middle
 
 ---
 
-## Welcome to AutoMaxx!
+## Welcome to AutoMaxx! 🚘🚖🚘 
 
 A used-car marketplace
 
@@ -397,7 +399,9 @@ class: center middle
 
 # Listen to the business*
 
-#### *Literally, listen :ear:
+--
+
+#### *Literally, listen 🌽👂
 
 
 ---
@@ -564,39 +568,31 @@ Answering: what happens to what entities in the system?
 
 ---
 
-I want you to become Language Addicts
+class: middle
+
+#### In the I'm Being Serious Department
+
+## Become Language Addicts
 
 Internalize your domain!
 
-Language Zealots?
+???
 
 If there's one thing that DDD tells us, it's to pay attention to the language, and the organization will follow.
 
 ---
 
-Yoda gif
+background-image: url(/images/yoda.jpg)
 
 ---
 
-## Elixir time!
+class: middle center
+
+# Elixir time! 💁‍🙋‍♂️
 
 ---
 
-OK so back to that question - how to properly use Phoenix contexts?
-
----
-
-A context is a self-contained system. A module!
-
-> Quote from Context docs
-
----
-
-Let's start by looking at our Inspection context:
-
----
-
-class: background-color-code 
+class: background-color-code
 
 ### Contexts can expose domain entities
 
@@ -614,7 +610,7 @@ end
 
 ---
 
-class: background-color-code 
+class: background-color-code
 
 ### Contexts can expose methods that perform domain actions
 
@@ -705,7 +701,7 @@ end
 # lib/automaxx/inspection/score.ex
 defmodule AutoMaxx.Inspection.Score do
   schema "inspection_scores" do
-    belongs_to :vehicle, AutoMaxx.Identity.Vehicle
+    belongs_to :vehicle, AutoMaxx.Inspection.Vehicle
     belongs_to :rated_by, AutoMaxx.Identity.User
   end
 end
@@ -846,19 +842,9 @@ defmodule AutoMaxx.Marketing do
 end
 ```
 
----
-
-#### Sharing Concepts
-
-## Struct Conversion
-
-This is known as an **Anti-Corruption Layer**
-
 ???
 
-But don't get too hung up on it. Use it when it's important and the nuances are important
-to capture.
-
+Idea is that your semantics for your internal concept are more fluid and in line with the business. The other idea is that you can reformat data to your use case
 
 ---
 
@@ -872,7 +858,7 @@ defmodule AutoMaxx.Marketing.AnalyticsController do
     # Convert the concept at the boundaries
     |> Marketing.visitor_for_user()
 
-    # Then proceed to perform the domain action 
+    # Then proceed to perform the domain action
     |> Marketing.fire_analytics_event_to_google(%{payload: payload})
   end
 end
@@ -932,7 +918,21 @@ end
 
 ---
 
-#### Just My Opinion :tm:
+class: middle
+
+#### Sharing Concepts
+
+## This is known as an **Anti-Corruption Layer**
+
+???
+
+But don't get too hung up on it. Use it when it's important and the nuances are important
+to capture.
+
+
+---
+
+#### Sharing Concepts
 
 ### Avoid cross-context joins if you can
 
@@ -948,90 +948,84 @@ Instead, store them as external references
     field :user_id, :string
     field :user_id, :uuid
 ```
+
 ???
 
 This decouples our two domains.
 
-This prevents our
+---
+
+class: middle center
+
+# Aggregate Roots
+
+From the biggest, baddest trees around
 
 ---
 
-The beauty of Elixir is communicating between contexts:
+class: middle center
 
-In-process synchronous communication?
-Inter-process synchronous?
-Inter-process async?
+## Minimize moving pieces
 
-You get to choose with the power of OTP!
+What are the data structures that always belong together?
 
----
-
-Async:
-
-Task.perform_async
-
----
-
-Sync:
-
-GenServer.start_link()
-
----
-
-#### Concept: Aggregate Root 
+???
 
 Minimize the data you pass around. Return a tree data structure of data that logically belongs together.
 
 ---
 
-DON'T
+##### DON'T
 
 ```elixir
-defmodule Inspection do
-  def get_vehicle()
-  end
-
-  def get_vehicle_rating()
-  end
+defmodule AutoMaxx.Inspection do
+  def get_vehicle() do: # => %Vehicle{}
+  def get_vehicle_rating() do: # => %Rating{}
 end
 ```
-
----
-
-DO
+--
+##### DO
 
 ```elixir
-defmodule Inspection do
-  def get_vehicle()
-  end
+defmodule AutoMaxx.Inspection do
+  def get_vehicle() do:
 end
-
 # => %Vehicle{rating: %Rating{}}
 ```
 
 ---
 
-DON'T
+class: small-code
+
+##### DON'T
 
 ```elixir
-defmodule Inspection do
-  def update_rating(rating_id, new_rating)
+defmodule AutoMaxx.Inspection do
+  def update_rating(rating_id, new_rating) do
+    Repo.get(AutoMaxx.Inspection.Rating, rating_id)
+    |> AutoMaxx.Inspection.Rating.changeset(%{value: new_rating})
+    |> Repo.update()
+  end
+end
+```
+--
+##### DO
+
+```elixir
+defmodule AutoMaxx.Inspection do
+  def update_rating(vehicle_id, new_rating) do:
+    Repo.get(AutoMaxx.Inspection.Vehicle, vehicle_id)
+    |> Repo.preload(:rating)
+    |> Map.get(:rating)
+    |> AutoMaxx.Inspection.Rating.changeset(%{value: new_rating})
+    |> Repo.update()
   end
 end
 ```
 
 ---
 
-DO
-
-```elixir
-defmodule Inspection do
-  def update_rating(vehicle_id, new_rating)
-  end
-end
-```
-
----
+[WIP] - what does DDD say about ARs?
 
 This minimizes the amount of CRUD actions you must implement
 
@@ -1039,9 +1033,115 @@ This also makes your system easier to reason about.
 
 ---
 
-Advanced: Event-driven messaging styles between contexts
+class: middle center
+
+# Event-driven messaging
+
+For some really decoupled contexts
+
+???
 
 In purer forms of DDD, you would emit events over a message bus and listeners would bind to their callbacks if they are interested.
+
+---
+
+## Where is the coupling here?
+
+```elixir
+# lib/automaxx/identity/identity.ex
+defmodule AutoMaxx.Identity do
+  def create_user(...) do
+    do_create_user()
+    |> AutoMaxx.Inspection.maybe_create_mechanic()
+    |> AutoMaxx.Marketing.subscribe_user_to_email_list()
+    |> AutoMaxx.Analytics.track_event('user_created')
+  end
+end
+```
+
+---
+
+## Publish facts (domain events) over a bus
+
+Interested contexts can subscribe to domain events
+
+In fact, you probably came up with these events in your context map!
+
+---
+
+##### Publisher:
+
+Identity context publishes `identity.user.created`
+
+##### Subscribers:
+
+Marketing context puts the user on the email marketing list
+
+Inspection context creates a corresponding `Mechanic` if the user is one
+
+Analytics context publishes metric to Google Analytics
+
+---
+
+## Using the `event_bus` library
+
+Github: [otobus/event_bus](https://github.com/otobus/event_bus)
+
+---
+
+class: small-code middle
+
+```elixir
+# lib/automaxx/identity/identity.ex
+defmodule AutoMaxx.Identity do
+  def create_user(...) do
+    do_create_user()
+    |> publish_event(:"identity.user.created")
+  end
+
+  use EventBus.EventSource
+
+  defp publish_event(%User{} = user, event_name) do
+    EventSource.notify %{id: UUID.uuid4(), topic: event_name} do
+      %{user: user}
+    end
+  end
+end
+```
+
+---
+
+class: small-code middle
+
+```elixir
+# lib/automaxx/marketing/event_handler.ex
+defmodule AutoMaxx.Marketing.EventHandler do
+  def process({:"identity.user.created" = event_name, event_id}) do
+    %{data: %{user: user}} = EventBus.fetch_event({event_name, event_id})
+
+    AutoMaxx.Marketing.subscribe_user_to_email_list(user)
+  end
+
+  def process({:"some.other.event" = event_name, event_id}) do: ...
+end
+```
+
+---
+
+class: small-code middle
+
+```elixir
+# lib/automaxx/inspection/event_handler.ex
+defmodule AutoMaxx.Inspection.EventHandler do
+  def process({:"identity.user.created" = event_name, event_id}) do
+    %{data: %{user: user}} = EventBus.fetch_event({event_name, event_id})
+
+    AutoMaxx.Inspection.create_mechanic_from_user(user)
+  end
+
+  def process({:"yet.another.event" = event_name, event_id}) do: ...
+end
+```
 
 ---
 
@@ -1105,28 +1205,6 @@ end
 
 ---
 
-## Prefer coarse contexts to fine contexts.
-
-You can optimize, extract later
-
-???
-
-(Counter to Elixir docs)
-
-
----
-
-
-#### Miscellany
-
-### How do I deal with dependencies between boundaries?
-
-Avoid DB joins, as those couple your contexts together.
-
-Utilize aggregate roots
-
----
-
 Suggested organization structure:
 
 ```
@@ -1141,6 +1219,50 @@ foo_context/
 foo_context/
   foo_mock.exs
 ```
+
+---
+
+## Prefer coarse contexts to fine contexts.
+
+You can optimize, extract later
+
+???
+
+(Counter to Elixir docs)
+
+---
+
+class: middle center
+
+# In conclusion
+
+---
+
+Listen to the business
+
+(Build a **Context Map**)
+
+---
+
+Keep internal concepts isolated behind a context
+
+---
+
+Allow linguistic precision (and domain clarity) by being able to discern the nuances of our domain models
+
+---
+
+Decouple contexts even further with an event bus
+
+---
+
+Lean on types, pattern matching and typespecs to enforce data integrity and system boundaries
+
+---
+
+class: middle center
+
+# And that's what I think makes a beautiful system
 
 ---
 

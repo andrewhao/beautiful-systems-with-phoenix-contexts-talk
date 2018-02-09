@@ -45,7 +45,7 @@ h4 {
 }
 
 h5 {
-  margin: 1rem;
+  margin: 1rem 0;
 }
 
 pre {
@@ -61,6 +61,7 @@ pre {
 
 .remark-code {
   margin: 0 -1em;
+  overflow-x: hidden !important;
 }
 
 .remark-slide-content {
@@ -87,7 +88,7 @@ pre {
     color: $h1-color;
     font-size: $h1-font-size;
     line-height: 1em;
-    margin: 0;
+    margin: 0.5em 0;
   }
 
   h2 {

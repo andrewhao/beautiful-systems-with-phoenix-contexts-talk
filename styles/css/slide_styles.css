@@ -75,7 +75,7 @@ h4 {
   /*font-style: italic;*/ }
 
 h5 {
-  margin: 1rem; }
+  margin: 1rem 0; }
 
 pre {
   margin: 1rem 0; }
@@ -87,7 +87,8 @@ pre {
   line-height: 1.2em; }
 
 .remark-code {
-  margin: 0 -1em; }
+  margin: 0 -1em;
+  overflow-x: hidden !important; }
 
 .remark-slide-content {
   font-size: 2em;
@@ -106,7 +107,7 @@ pre {
     color: #dc493a;
     font-size: 3.5em;
     line-height: 1em;
-    margin: 0; }
+    margin: 0.5em 0; }
   .remark-slide-content h2 {
     color: #4b00b5;
     font-size: 2em; }
