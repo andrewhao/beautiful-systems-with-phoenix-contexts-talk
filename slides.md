@@ -4,10 +4,7 @@ class: middle hide-slide-number
 
 #### Phoenix Contexts and Domain-Driven Design
 
-
 Andrew Hao [@andrewhao](https://www.twitter.com/andrewhao)
-
-<br />
 
 <img src="images/c5-logo-vertical.png" alt="Carbon Five" style="float: right;" height="75" />
 
@@ -150,6 +147,26 @@ $ mix phx.gen.html Identity User users \
 
 class: background-color-code
 
+### Ecto schema
+
+```elixir
+# lib/my_app/identity/user.ex
+defmodule MyApp.Identity.User do
+  use Ecto.Schema
+
+  schema "users" do
+    field :name, :string
+    field :email, :string
+
+    timestamps()
+  end
+end
+```
+
+---
+
+class: background-color-code
+
 ### Domain resource operations in the context
 
 ```elixir
@@ -204,23 +221,6 @@ end
 
 ---
 
-class: background-color-code
-
-### Ecto schema
-
-```elixir
-defmodule MyApp.User do
-  use Ecto.Schema
-
-  schema "users" do
-    field :name, :string
-    field :email, :string
-  end
-end
-```
-
----
-
 ### Contexts, the Phoenix way:
 
 All web concerns live in `MyAppWeb` context.
@@ -238,11 +238,15 @@ Contexts encapsulate persistence and domain logic
 
 Contexts are responsible for the implementation details of business logic.
 
+--
+
+The outer context module is the public interface to the rest of the app
+
 ---
 
 class: middle center
 
-# I have a few questions
+# 🙋🏻‍♂️ I have a few questions
 
 ---
 
@@ -261,6 +265,12 @@ class: middle center
 class: middle center
 
 ## How do I know if it's too broad (coarse) or too specific (fine)?
+
+---
+
+class: middle center
+
+## How do I manage Ecto schemas between contexts?
 
 ---
 
@@ -327,12 +337,13 @@ class: middle
 * Web layer
 * Domain layer
 * Persistence layer
+* Adapters
 
 ---
 
 class: middle center
 
-# Bigger picture
+# 🌌 Bigger picture
 
 ---
 
@@ -545,26 +556,39 @@ different concepts, and hence different Ubiqutious Languages.
 
 ---
 
-## Bounded Contexts allow for precise language
+#### For example:
 
-Your domains may use conflicting, overloaded terms with nuances depending on context
-
-Embrace it!
-
---
-
-Bounded contexts allow these conflicting concepts to coexist
-
+A `Rating` has a specific meaning in the `Inspection` subdomain, but it means something else in the `Customer Support` subdomain.
 
 ---
 
-Aside: this is important shared vocabulary.
+#### For example:
 
-Write this vocabulary down and put it in a Glossary.
+A `User` in the `Identity` context is:
+
+A `Mechanic` in the `Inspection` context, is:
+
+A `Seller` or `Buyer` in the `Financial Transaction` context
+
+---
+
+#### Bounded Contexts
+
+## Precise language, precise models
+
+Your domains may now use their own specific, nuanced terminology.
+
+Powerful modeling tool, and keeps your product in sync with the business stakeholders
+
+---
+
+## Glossary
+
+Write this shared vocabulary down and put it in a **Glossary**.
 
 --
 
-Answering: what happens to what entities in the system?
+This is helpful for future teammates who come on and need to be ramped up.
 
 ---
 
@@ -765,9 +789,8 @@ class: middle center
 ### What did you notice here?
 
 * Contexts only expose methods at their outer layer.
-* (Avoid exposing inner workings of contexts.)
+* Contexts hide internal implementations.
 * Use domain language when naming actions, entities and concepts.
-* Craft your functions to behave like they do in the real world
 
 ???
 
@@ -804,13 +827,7 @@ class: middle center
 1. **Struct Conversion**: convert to internal concepts at the boundaries with pure structs
 
 --
-1. **Peer Concept**: Create an internal concept persisted in Ecto, then create a reference to the external concept
-
---
-1. ~~**Double Trouble**: Use an overlapping internal Ecto schema over the external Ecto schema~~
-
---
-1. **Nothing**: Just use it directly, as-is*
+1. **Collaborating Schema**: Create an internal concept persisted in Ecto, then create a reference to the external concept
 
 ---
 
@@ -870,7 +887,11 @@ end
 
 Here we see the powers of pattern matching!
 
+--
+
 Reject types that do not match your internal concepts
+
+--
 
 Even better - leverage the powers of typespecs.
 
@@ -878,7 +899,7 @@ Even better - leverage the powers of typespecs.
 
 #### Sharing Concepts
 
-## (Persisted) Peer Concept
+## Collaborator Schema
 
 Useful for **Read+Write** use cases
 
@@ -1113,6 +1134,8 @@ end
 
 class: small-code middle
 
+##### In each context, create an `EventHandler` module.
+
 ```elixir
 # lib/automaxx/marketing/event_handler.ex
 defmodule AutoMaxx.Marketing.EventHandler do
@@ -1145,83 +1168,6 @@ end
 
 ---
 
-Async, fault-tolerant approaches:
-
-Return "job" UUID, then poll for completion.
-
----
-
-Testing across boundaries:
-
-Don't!
-
---
-
-Use Mox to implement context mocks
-
-???
-
-Thanks to coworker Hannah for this idea.
-
----
-
-For example, we are testing that the Inspection context needs to fetch up a User.
-
-In an old world, we might have used Ecto to pick something up from the repo.
-
-However, in DDD we factored this back behind a different context, so we wire this up with a Mox mock in our test:
-
----
-
-class: background-color-code
-
-```elixir
-defmodule Inspection
-  def log_inspection() do
-    # ...
-    Identity.get_user(user_id)
-    |> do_something()
-    |> # ...
-  end
-end
-```
-
----
-
-class: background-color-code
-
-```elixir
-# in test
-defmodule Inspection.Test do
-  setup do
-  end
-
-  test "it uses the User to perform an inspection" do
-    expect(Identity.Mock)
-    |> receive(:get_user)
-  end
-end
-```
-
----
-
-Suggested organization structure:
-
-```
-foo_context/
-  behaviour.ex
-  foo_context.ex
-  foo_entity.ex
-  foo_bar_entity.ex
-```
-
-```
-foo_context/
-  foo_mock.exs
-```
-
----
-
 ## Prefer coarse contexts to fine contexts.
 
 You can optimize, extract later
@@ -1234,29 +1180,85 @@ You can optimize, extract later
 
 class: middle center
 
+# Caveats!
+
+---
+
+class: middle
+
+#### Caveats
+
+## Start small
+
+Don't overdo it. Refactor things into one context at a time.
+
+---
+
+class: middle
+
+#### Caveats
+
+## DDD concepts first, then patterns
+
+Start with the Context Map. Make sure you understand the core concepts about linguistic clarity.
+
+Keep the team and the code speaking the same language!
+
+---
+
+class: middle
+
+#### Caveats
+
+## For systems of a certain scale
+
+If you have a small-scale system, this might be overkill!
+
+---
+
+class: middle center
+
 # In conclusion
 
 ---
 
-Listen to the business
+class: middle center
+
+## Listen to the business
 
 (Build a **Context Map**)
 
 ---
 
+class: middle center
+
+## Strict boundaries
+
 Keep internal concepts isolated behind a context
 
 ---
+class: middle center
 
-Allow linguistic precision (and domain clarity) by being able to discern the nuances of our domain models
+
+## Linguistic precision & domain clarity
+
+Embrace the nuances of our domain models
 
 ---
 
-Decouple contexts even further with an event bus
+class: middle center
+
+## Use an event bus
+
+Decouple contexts even further, with nice scalability advantages
 
 ---
 
-Lean on types, pattern matching and typespecs to enforce data integrity and system boundaries
+class: middle center
+
+## Lean on types, pattern matching and typespecs
+
+Elixir gives us great tools to enforce data integrity and system boundaries
 
 ---
 
@@ -1278,7 +1280,7 @@ class: middle hide-slide-number
 
 &nbsp;
 
-<img src="images/c5-logo-white.svg" alt="Carbon Five" style="float: right;" height="75" />
+<img src="images/c5-logo-vertical.png" alt="Carbon Five" style="float: right;" height="75" />
 
 ---
 
@@ -1289,6 +1291,11 @@ class: middle hide-slide-number
 * Hagemann, Stephan. [Component-Based Rails Applications](https://leanpub.com/cbra).
 * Parnas, D.L. ["On the Criteria To Be Used in Decomposing Systems into Modules"](http://www.cs.umd.edu/class/spring2003/cmsc838p/Design/criteria.pdf).
 * Vernon, Vaughan. [Implementing Domain-Driven Design](https://www.amazon.com/Implementing-Domain-Driven-Design-Vaughn-Vernon/dp/0321834577).
+
+---
+
+#### Credits & Prior Art
+
 * W. P. Stevens ; G. J. Myers ; L. L. Constantine. ["Structured Design"](http://ieeexplore.ieee.org/document/5388187/) - IBM Systems Journal, Vol 13 Issue 2, 1974.
 * Steinegger, Giessler, Hippchen, Abeck. [Overview of a Domain-Driven Design Approach to Build Microservice-Based Applications](https://cm.tm.kit.edu/download/domain_driven_microservice-architecture_17-03-15.pdf)
 * Rob Martin - Perhap: Applying DDD and Reactive Architectures: https://www.youtube.com/watch?list=PLqj39LCvnOWZMVugtyKlHMF1o2zPNntFL&time_continue=5&v=kq4qTk18N-c
