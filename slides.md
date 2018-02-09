@@ -589,58 +589,64 @@ A context is a self-contained system. A module!
 
 ---
 
-Let's start simple: one module for each context.
+Let's start by looking at our Inspection context:
 
 ---
 
-class: background-color-code
+class: background-color-code 
 
-##### Context: a module with a public interface.
+### Contexts can expose domain entities
 
 ```elixir
-defmodule Inspection do
-  def get_vehicle() do
-  end
+defmodule AutoMaxx.Inspection do
+  def get_vehicle!() do: ...
+  def list_vehicles() do: ...
+  def update_vehicle() do: ...
 
-  def get_owner() do
-  end
+  def get_mechanic!() do: ...
 
-  def get_mechanic() do
-  end
+  #...
 end
 ```
 
 ---
 
-class: background-color-code
+class: background-color-code 
 
-##### ...but also allows callers to perform state-changing actions inside of its boundaries.
+### Contexts can expose methods that perform domain actions
 
 ```elixir
-defmodule Inspection do
-  def rate_vehicle(vehicle_id, rating) do
-  end
+defmodule AutoMaxx.Inspection do
+  def add_vehicle_to_garage_queue(vehicle) do: ...
+  def rate_vehicle(vehicle, mechanic, inspection_rating) do: ...
 end
 ```
+
+---
+
+Let's work with this user flow:
+
+Diagram of user UI
 
 ---
 
 class: background-color-code small-code
 
-##### Let's look at some code in our web app that handles a vehicle rating:
-
 ```elixir
-defmodule MyApp.VehicleInspectionScoreController do
-  def update do
-    user = Repo.get_by(User, user_id)
-    with vehicle <-
+defmodule AutoMaxx.VehicleInspectionScoreController do
+  def update(conn, %{
+        user_id: user_id, vehicle_id: vehicle_id, score: new_score
+      }) do
+    with user <- Repo.get_by(User, user_id),
+         vehicle <-
            Repo.get_by(Vehicle, vehicle_id)
-           |> Repo.preload(:inspection_score),
-         :ok <- InspectionScorePolicy.editable_by?(user) do
+           |> Repo.preload(:score),
+         :ok <- InspectionScorePolicy.editable_by?(vehicle, user) do
       inspection_score =
-        vehicle.inspection_score
-        |> InspectionScore.changeset(%{score: new_score})
+        vehicle.score
+        |> Score.changeset(%{value: new_score})
         |> Repo.insert!()
+
       render(conn, "show.html", inspection_score: inspection_score)
     else
       render(conn, "error.html", message: "Oops!")
@@ -656,17 +662,90 @@ Imagine a User -> Vehicle -> InspectionScore
 
 ---
 
-class: background-color-code small-code middle
+class: background-color-code small-code
+
+##### Move domain entities into the `Identity` context
 
 ```elixir
-defmodule MyApp.VehicleInspectionScoreController do
-  # Refactor into modules
-  def update do
+# lib/automaxx/identity/user.ex
+defmodule AutoMaxx.Identity.User do
+  schema "users" do: ...
+end
+```
+
+##### Add domain action to the `Identity` context API
+
+```elixir
+# lib/automaxx/identity/identity.ex
+defmodule AutoMaxx.Identity do
+  def get_user(user_id) do
+    Repo.get_by(AutoMaxx.Identity.User, id: user_id)
+  end
+end
+```
+
+---
+
+class: background-color-code small-code
+
+##### Move domain entities into the `Inspection` context
+
+```elixir
+# lib/automaxx/inspection/vehicle.ex
+defmodule AutoMaxx.Inspection.Vehicle do
+  schema "vehicles" do
+    belongs_to :owner, AutoMaxx.Identity.User
+    has_one    :score, AutoMaxx.Inspection.Score
+  end
+end
+
+# lib/automaxx/inspection/score.ex
+defmodule AutoMaxx.Inspection.Score do
+  schema "inspection_scores" do
+    belongs_to :vehicle, AutoMaxx.Identity.Vehicle
+    belongs_to :rated_by, AutoMaxx.Identity.User
+  end
+end
+```
+
+---
+
+class: background-color-code small-code middle
+
+##### Add domain action to the `Inspection` context API
+
+```elixir
+defmodule AutoMaxx.Inspection do
+  def rate_vehicle(vehicle, mechanic, inspection_score) do
+    with :ok <- Inspection.ScorePolicy.editable_by?(vehicle, mechanic) do
+      Repo.get_by(Inspection.Vehicle, vehicle_id)
+      |> Repo.preload(:score)
+      |> Inspection.Score.changeset(%{
+        rated_by: mechanic.id,
+        value: inspection_score
+      })
+      |> Repo.insert!()
+    else
+      {:auth_error, "Unauthorized"}
+    end
+  end
+end
+```
+
+---
+
+class: background-color-code small-code middle
+
+##### Simplify the controller with your new context APIs
+
+```elixir
+defmodule AutoMaxx.VehicleInspectionScoreController do
+  def update(conn, %{
+    user_id: user_id, vehicle_id: vehicle_id, score: new_score
+  }) do
     with user <- Identity.get_user(user_id),
          vehicle <- Inspection.get_vehicle(vehicle_id),
-         {:ok, score} <- Inspection.update_inspection_score_for_user(
-           vehicle, user, %{score: new_score}
-         ) do
+         {:ok, score} <- Inspection.rate_vehicle(vehicle, user, new_score) do
       render(conn, "show.html", inspection_score: score)
     else
       render(conn, "error.html", message: "Oops!")
@@ -677,24 +756,35 @@ end
 
 ---
 
-class: background-color-code small-code
+class: middle center
 
-##### Push the code back into your context
+# Way better.
 
-```elixir
-defmodule Inspection do
-  def update_inspection_score_for_user(user, vehicle_id, new_score)
-    with :ok <- Inspection.ScorePolicy.editable_by?(user) do
-      Repo.get_by(Vehicle, vehicle_id)
-      |> Repo.preload(:inspection_score)
-      |> Inspection.Score.changeset(new_score)
-      |> Repo.insert!()
-    else
-      # ...
-    end
-  end
-end
-```
+---
+
+
+### What did you notice here?
+
+* Contexts only expose methods at their outer layer.
+* (Avoid exposing inner workings of contexts.)
+* Use domain language when naming actions, entities and concepts.
+* Craft your functions to behave like they do in the real world
+
+???
+
+`rate` versus `update_inspection_score`
+
+---
+
+class: middle center
+
+# Concept sharing
+
+Or: Double Trouble
+
+---
+
+A `User` needs to 
 
 ---
 

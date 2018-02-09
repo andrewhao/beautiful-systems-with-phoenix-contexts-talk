@@ -70,6 +70,12 @@ h4 {
   /*border-bottom: 1px solid #6E6362;*/
   /*font-style: italic;*/ }
 
+h5 {
+  margin: 1rem; }
+
+pre {
+  margin: 1rem 0; }
+
 .remark-code,
 .remark-inline-code {
   font-family: "Fira Mono", "Fira Code", "Ubuntu Mono";
