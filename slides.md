@@ -671,21 +671,21 @@ background-image: url(/images/inspection-ui.png)
 class: background-color-code small-code
 
 ```elixir
-defmodule AutoMaxx.VehicleInspectionScoreController do
+defmodule AutoMaxx.VehicleInspectionRatingController do
   def update(conn, %{
-        user_id: user_id, vehicle_id: vehicle_id, score: new_score
+        user_id: user_id, vehicle_id: vehicle_id, rating: new_rating
       }) do
     with user <- Repo.get_by(User, user_id),
          vehicle <-
            Repo.get_by(Vehicle, vehicle_id)
-           |> Repo.preload(:score),
-         :ok <- InspectionScorePolicy.editable_by?(vehicle, user) do
-      inspection_score =
-        vehicle.score
-        |> Score.changeset(%{value: new_score})
+           |> Repo.preload(:rating),
+         :ok <- InspectionRatingPolicy.editable_by?(vehicle, user) do
+      inspection_rating =
+        vehicle.rating
+        |> rating.changeset(%{value: new_rating})
         |> Repo.insert!()
 
-      render(conn, "show.html", inspection_score: inspection_score)
+      render(conn, "show.html", inspection_rating: inspection_rating)
     else
       render(conn, "error.html", message: "Oops!")
     end
@@ -695,7 +695,7 @@ end
 
 ???
 
-Imagine a User -> Vehicle -> InspectionScore
+Imagine a User -> Vehicle -> Inspectionrating
 
 
 ---
@@ -733,13 +733,13 @@ class: background-color-code small-code
 defmodule AutoMaxx.Inspection.Vehicle do
   schema "vehicles" do
     belongs_to :owner, AutoMaxx.Identity.User
-    has_one    :score, AutoMaxx.Inspection.Score
+    has_one    :rating, AutoMaxx.Inspection.Rating
   end
 end
 
-# lib/automaxx/inspection/score.ex
-defmodule AutoMaxx.Inspection.Score do
-  schema "inspection_scores" do
+# lib/automaxx/inspection/rating.ex
+defmodule AutoMaxx.Inspection.Rating do
+  schema "inspection_ratings" do
     belongs_to :vehicle, AutoMaxx.Inspection.Vehicle
     belongs_to :rated_by, AutoMaxx.Identity.User
   end
@@ -754,13 +754,13 @@ class: background-color-code small-code middle
 
 ```elixir
 defmodule AutoMaxx.Inspection do
-  def rate_vehicle(vehicle, mechanic, inspection_score) do
-    with :ok <- Inspection.ScorePolicy.editable_by?(vehicle, mechanic) do
+  def rate_vehicle(vehicle, mechanic, inspection_rating) do
+    with :ok <- Inspection.RatingPolicy.editable_by?(vehicle, mechanic) do
       Repo.get_by(Inspection.Vehicle, vehicle_id)
-      |> Repo.preload(:score)
-      |> Inspection.Score.changeset(%{
+      |> Repo.preload(:rating)
+      |> Inspection.Rating.changeset(%{
         rated_by: mechanic.id,
-        value: inspection_score
+        value: inspection_rating
       })
       |> Repo.insert!()
     else
@@ -777,14 +777,14 @@ class: background-color-code small-code middle
 ##### Simplify the controller with your new context APIs
 
 ```elixir
-defmodule AutoMaxx.VehicleInspectionScoreController do
+defmodule AutoMaxx.VehicleInspectionRatingController do
   def update(conn, %{
-    user_id: user_id, vehicle_id: vehicle_id, score: new_score
+    user_id: user_id, vehicle_id: vehicle_id, rating: new_rating
   }) do
     with user <- Identity.get_user(user_id),
          vehicle <- Inspection.get_vehicle(vehicle_id),
-         {:ok, score} <- Inspection.rate_vehicle(vehicle, user, new_score) do
-      render(conn, "show.html", inspection_score: score)
+         {:ok, rating} <- Inspection.rate_vehicle(vehicle, user, new_rating) do
+      render(conn, "show.html", inspection_rating: rating)
     else
       render(conn, "error.html", message: "Oops!")
     end
@@ -809,7 +809,7 @@ class: middle center
 
 ???
 
-`rate` versus `update_inspection_score`
+`rate` versus `update_inspection_rating`
 
 ---
 
@@ -821,13 +821,9 @@ Or: Double Trouble
 
 ---
 
-class: middle center
+class: middle
 
 ### What happens when we need to use a `User` in a different context?
-
----
-
-### Listen to the business!
 
 **`Identity` domain**: `User`
 
@@ -839,10 +835,30 @@ class: middle center
 
 ### A few options:
 
+1. **Direct Usage (Do Nothing)**: Just directly use schemas between contexts
+
+--
 1. **Struct Conversion**: convert to internal concepts at the boundaries with pure structs
 
 --
 1. **Collaborator Schema**: Create an internal schema persisted in Ecto that uses a reference to the external schema
+
+
+---
+
+#### Sharing Concepts
+
+## Direct Usage (Do Nothing)
+
+Mix domain models between contexts
+
+```elixir
+defmodule AutoMaxx.Inspection do
+  def rate_vehicle(%Identity.User{} = user, vehicle, rating) do: ...
+end
+```
+
+Maybe it's OK if you're refactoring, but I discourage this...
 
 ---
 
@@ -1007,9 +1023,11 @@ Data that belongs together
 
 class: middle center
 
-## Minimize moving pieces
+## We belong together!
 
-What are the data structures that always belong together?
+Look for data that naturally falls into groups
+
+[WIP Diagram]
 
 ???
 
@@ -1043,11 +1061,7 @@ class: small-code
 
 ```elixir
 defmodule AutoMaxx.Inspection do
-  def update_rating(rating_id, new_rating) do
-    Repo.get(AutoMaxx.Inspection.Rating, rating_id)
-    |> AutoMaxx.Inspection.Rating.changeset(%{value: new_rating})
-    |> Repo.update()
-  end
+  def update_rating(rating_id, new_rating) do...
 end
 ```
 --
@@ -1055,13 +1069,7 @@ end
 
 ```elixir
 defmodule AutoMaxx.Inspection do
-  def update_rating(vehicle_id, new_rating) do:
-    Repo.get(AutoMaxx.Inspection.Vehicle, vehicle_id)
-    |> Repo.preload(:rating)
-    |> Map.get(:rating)
-    |> AutoMaxx.Inspection.Rating.changeset(%{value: new_rating})
-    |> Repo.update()
-  end
+  def rate_vehicle(vehicle_id, new_rating) do: ...
 end
 ```
 
@@ -1254,12 +1262,20 @@ class: middle center
 Keep internal concepts isolated behind a context
 
 ---
-class: middle center
 
+class: middle center
 
 ## Linguistic precision & domain clarity
 
 Embrace the nuances of our domain models
+
+---
+
+class: middle center
+
+## Ship aggregates around between contexts
+
+Thus simplifying the operational compexity of your data
 
 ---
 
