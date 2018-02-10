@@ -84,7 +84,7 @@ We will:
 
 - Introduce **Phoenix contexts**
 - Build a **Context Map** and use it to introduce Domain-Driven Design concepts
-- Apply our learnings in code!
+- Apply our learnings with **Elixir**!
 
 ---
 
@@ -270,7 +270,7 @@ class: middle center
 
 class: middle center
 
-## How do I manage Ecto schemas between contexts?
+## How will I know if my context is getting too big or unwieldy?
 
 ---
 
@@ -549,15 +549,9 @@ background-image: url(/images/context-map-4.png)
 
 The terms the business speaks within each domain!
 
-Put these in a **Glossary**
-
----
-
-## What to do with your Ubiquitious Language
-
-Speak about them consistently in the team
-Use terms consistently in the code
-Keep terms updated together
+* Put these in a **Glossary**
+* Speak about them consistently in the team
+* Use terms consistently in the code
 
 ---
 
