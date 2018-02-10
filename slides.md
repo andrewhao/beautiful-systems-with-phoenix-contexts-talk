@@ -831,13 +831,6 @@ class: middle
 
 1. **Direct Usage (Do Nothing)**: Just directly use schemas between contexts
 
---
-1. **Struct Conversion**: convert to internal concepts at the boundaries with pure structs
-
---
-1. **Collaborator Schema**: Create an internal schema persisted in Ecto that uses a reference to the external schema
-
-
 ---
 
 #### Sharing Concepts
@@ -855,6 +848,16 @@ end
 Maybe it's OK if you're refactoring, but I discourage this...
 
 ---
+
+### A few options:
+
+1. **Direct Usage (Do Nothing)**: Just directly use schemas between contexts
+
+1. **Struct Conversion**: convert to internal concepts at the boundaries with pure structs
+
+
+---
+
 
 #### Sharing Concepts
 
@@ -925,6 +928,17 @@ Even better - leverage the powers of typespecs.
 @spec subscribe_visitor_to_mailchimp(%Visitor{}) :: boolean
 @spec visitor_for_user(%User{}) :: %Visitor{}
 ```
+
+---
+
+### A few options:
+
+1. **Direct Usage (Do Nothing)**: Just directly use schemas between contexts
+
+1. **Struct Conversion**: convert to internal concepts at the boundaries with pure structs
+
+1. **Collaborator Schema**: Create an internal schema persisted in Ecto that uses a reference to the external schema
+
 
 ---
 
