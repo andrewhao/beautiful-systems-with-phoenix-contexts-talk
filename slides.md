@@ -6,7 +6,9 @@ class: middle hide-slide-number
 
 Andrew Hao [@andrewhao](https://www.twitter.com/andrewhao)
 
-<img src="images/c5-logo-vertical.png" alt="Carbon Five" style="float: right;" height="75" />
+[bit.ly/phoenix-contexts](https://bit.ly/phoenix-contexts)
+
+<img src="images/c5-logo-vertical.png" alt="Carbon Five" style="margin-top: -100px; float: right;" height="75" />
 
 ---
 
