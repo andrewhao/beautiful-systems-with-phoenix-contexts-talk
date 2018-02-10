@@ -441,7 +441,7 @@ Put up on a wall all the:
 
 class: background-image-contain
 
-background-image: url(/images/context-map-1.png)
+background-image: url(images/context-map-1.png)
 
 ---
 
@@ -457,7 +457,7 @@ More important to just get it down.
 
 class: background-image-contain
 
-background-image: url(/images/context-map-2.png)
+background-image: url(images/context-map-2.png)
 
 ---
 
@@ -491,13 +491,13 @@ Here at AutoMaxx, we focus on used car sales. If we aren't selling used cars, th
 
 class: background-image-contain
 
-background-image: url(/images/context-map-2.png)
+background-image: url(images/context-map-2.png)
 
 ---
 
 class: background-image-contain
 
-background-image: url(/images/context-map-3.png)
+background-image: url(images/context-map-3.png)
 
 ---
 
@@ -536,13 +536,13 @@ dedicated engineering staff.
 
 class: background-image-contain
 
-background-image: url(/images/context-map-3.png)
+background-image: url(images/context-map-3.png)
 
 ---
 
 class: background-image-contain
 
-background-image: url(/images/context-map-4.png)
+background-image: url(images/context-map-4.png)
 
 ---
 
@@ -617,7 +617,7 @@ If there's one thing that DDD tells us, it's to pay attention to the language, a
 
 ---
 
-background-image: url(/images/yoda.jpg)
+background-image: url(images/yoda.jpg)
 
 ---
 
@@ -660,7 +660,7 @@ end
 
 class: background-image-contain background-white
 
-background-image: url(/images/inspection-ui.png)
+background-image: url(images/inspection-ui.png)
 
 ---
 
