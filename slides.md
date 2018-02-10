@@ -437,7 +437,9 @@ Put up on a wall all the:
 
 ---
 
-Diagram
+class: background-image-contain
+
+background-image: url(/images/context-map-1.png)
 
 ---
 
@@ -451,21 +453,17 @@ More important to just get it down.
 
 ---
 
-#### Context Mapping
+class: background-image-contain
 
-## Take a step back.
-
-PNG grouped stickies screenshot
+background-image: url(/images/context-map-2.png)
 
 ---
 
 #### Context Mapping
 
-## Let the business lead
+## Take a step back.
 
-Listen to the words and terms they use
-
-People should be talking
+Natural clusters and groupings should be emerging
 
 ---
 
@@ -487,8 +485,20 @@ serves to fulfill its purpose in a certain operational category.
 
 Here at AutoMaxx, we focus on used car sales. If we aren't selling used cars, this company has really lost sight of its long term vision!
 
+---
+
+class: background-image-contain
+
+background-image: url(/images/context-map-2.png)
 
 ---
+
+class: background-image-contain
+
+background-image: url(/images/context-map-3.png)
+
+---
+
 #### Definition! 📖
 
 ### Supporting domains
@@ -526,6 +536,19 @@ You might not see these yet, but your diagram may tell you:
 
 ---
 
+class: background-image-contain
+
+background-image: url(/images/context-map-3.png)
+
+---
+
+class: background-image-contain
+
+background-image: url(/images/context-map-4.png)
+
+---
+
+
 ## Ubiquitous Language
 
 The terms the business speaks within each domain!
@@ -556,19 +579,25 @@ different concepts, and hence different Ubiqutious Languages.
 
 ---
 
+class: middle
+
 #### For example:
 
-A `Rating` has a specific meaning in the `Inspection` subdomain, but it means something else in the `Customer Support` subdomain.
+A `Rating` has a specific meaning in the **Inspection** subdomain (a vehicle health score)
+
+...but it means something else in the **Customer Support** subdomain (a customer support experience score)
 
 ---
 
+class: middle
+
 #### For example:
 
-A `User` in the `Identity` context is:
+A `User` in the **Identity** context is--
 
-A `Mechanic` in the `Inspection` context, is:
+A `Mechanic` in the **Inspection** context, is--
 
-A `Seller` or `Buyer` in the `Financial Transaction` context
+A `Seller` or `Buyer` in the **Financial Transaction** context
 
 ---
 
@@ -579,16 +608,6 @@ A `Seller` or `Buyer` in the `Financial Transaction` context
 Your domains may now use their own specific, nuanced terminology.
 
 Powerful modeling tool, and keeps your product in sync with the business stakeholders
-
----
-
-## Glossary
-
-Write this shared vocabulary down and put it in a **Glossary**.
-
---
-
-This is helpful for future teammates who come on and need to be ramped up.
 
 ---
 
@@ -647,9 +666,7 @@ end
 
 ---
 
-Let's work with this user flow:
-
-Diagram of user UI
+background-image: url(/images/inspection-ui.png)
 
 ---
 
@@ -853,7 +870,7 @@ defmodule AutoMaxx.Marketing do
     new_mapping = user
       |> Map.from_struct()
       |> Map.delete(:email)
-      |> Map.put(:contact, user.email)
+      |> Map.put(:handle, user.email)
     struct(AutoMaxx.Marketing.Visitor, new_mapping)
   end
 end
