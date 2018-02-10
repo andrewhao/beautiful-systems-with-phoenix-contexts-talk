@@ -532,10 +532,6 @@ dedicated engineering staff.
 
 ---
 
-You might not see these yet, but your diagram may tell you:
-
----
-
 class: background-image-contain
 
 background-image: url(/images/context-map-3.png)
@@ -665,6 +661,8 @@ end
 ```
 
 ---
+
+class: background-image-contain background-white
 
 background-image: url(/images/inspection-ui.png)
 
@@ -844,7 +842,7 @@ class: middle center
 1. **Struct Conversion**: convert to internal concepts at the boundaries with pure structs
 
 --
-1. **Collaborating Schema**: Create an internal concept persisted in Ecto, then create a reference to the external concept
+1. **Collaborator Schema**: Create an internal schema persisted in Ecto that uses a reference to the external schema
 
 ---
 
@@ -882,10 +880,10 @@ Idea is that your semantics for your internal concept are more fluid and in line
 
 ---
 
-class: small-code
+class: small-code middle
 
 ```elixir
-defmodule AutoMaxx.Marketing.AnalyticsController do
+defmodule AutoMaxx.Marketing.EmailSubscriptionController do
   def create(conn, %{user_id: user_id, payload: payload}) do
     Identity.get_user(user_id)
 
@@ -893,24 +891,30 @@ defmodule AutoMaxx.Marketing.AnalyticsController do
     |> Marketing.visitor_for_user()
 
     # Then proceed to perform the domain action
-    |> Marketing.fire_analytics_event_to_google(%{payload: payload})
+    |> Marketing.subscribe_visitor_to_mailchimp(%{payload: payload})
   end
 end
 ```
 
 ---
 
-### Yay Types!
+### Pattern matching and types
 
-Here we see the powers of pattern matching!
+Strict type guarantees with pattern matching
 
---
-
-Reject types that do not match your internal concepts
+```elixir
+def subscribe_visitor_to_mailchimp(%Visitor{} = visitor) do ...
+def visitor_for_user(%User{} = user) do...
+```
 
 --
 
 Even better - leverage the powers of typespecs.
+
+```elixir
+@spec subscribe_visitor_to_mailchimp(%Visitor{}) :: boolean
+@spec visitor_for_user(%User{}) :: %Visitor{}
+```
 
 ---
 
@@ -995,9 +999,9 @@ This decouples our two domains.
 
 class: middle center
 
-# Aggregate Roots
+# Aggregates
 
-From the biggest, baddest trees around
+Data that belongs together
 
 ---
 
@@ -1063,11 +1067,11 @@ end
 
 ---
 
-[WIP] - what does DDD say about ARs?
+### Leverage Aggregate Roots
 
-This minimizes the amount of CRUD actions you must implement
+Your systems should expose only the minimum Aggregate Roots in your context.
 
-This also makes your system easier to reason about.
+Passing Aggregates around simplifies your APIs
 
 ---
 
@@ -1075,7 +1079,7 @@ class: middle center
 
 # Event-driven messaging
 
-For some really decoupled contexts
+Decouple your contexts even further
 
 ???
 
@@ -1103,7 +1107,9 @@ end
 
 Interested contexts can subscribe to domain events
 
-In fact, you probably came up with these events in your context map!
+--
+
+Refer back to your **Context Map** and **Glossary** where your business stakeholders helped you define events!
 
 ---
 
@@ -1121,9 +1127,13 @@ Analytics context publishes metric to Google Analytics
 
 ---
 
+class: middle
+
 ## Using the `event_bus` library
 
 Github: [otobus/event_bus](https://github.com/otobus/event_bus)
+
+Or any other system that gives you pub/sub capabilities
 
 ---
 
@@ -1182,16 +1192,6 @@ defmodule AutoMaxx.Inspection.EventHandler do
   def process({:"yet.another.event" = event_name, event_id}) do: ...
 end
 ```
-
----
-
-## Prefer coarse contexts to fine contexts.
-
-You can optimize, extract later
-
-???
-
-(Counter to Elixir docs)
 
 ---
 
