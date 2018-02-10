@@ -1021,11 +1021,18 @@ class: middle center
 
 Look for data that naturally falls into groups
 
-[WIP Diagram]
-
 ???
 
 Minimize the data you pass around. Return a tree data structure of data that logically belongs together.
+
+
+---
+
+background-image: url('images/without-aggregate-root.png')
+
+---
+
+background-image: url('images/aggregate-root.png')
 
 ---
 
@@ -1035,6 +1042,7 @@ Minimize the data you pass around. Return a tree data structure of data that log
 defmodule AutoMaxx.Inspection do
   def get_vehicle() do: # => %Vehicle{}
   def get_vehicle_rating() do: # => %Rating{}
+  def get_vehicle_list_price() do: # => %ListPrice{}
 end
 ```
 --
@@ -1044,12 +1052,10 @@ end
 defmodule AutoMaxx.Inspection do
   def get_vehicle() do:
 end
-# => %Vehicle{rating: %Rating{}}
+# => %Vehicle{rating: %Rating{}, list_price: %ListPrice{}}
 ```
 
 ---
-
-class: small-code
 
 ##### DON'T
 
@@ -1071,7 +1077,7 @@ end
 
 ### Leverage Aggregate Roots
 
-Your systems should expose only the minimum Aggregate Roots in your context.
+Minimize your **Aggregate Roots** in your context.
 
 Passing Aggregates around simplifies your APIs
 
@@ -1291,7 +1297,7 @@ Elixir gives us great tools to enforce data integrity and system boundaries
 
 class: middle center
 
-# And that's what I think makes a beautiful system
+# That's what I think makes beautiful systems
 
 ---
 
