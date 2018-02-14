@@ -1,0 +1,24 @@
+{
+  "name": "beautiful-systems-with-phoenix-contexts-talk",
+  "version": "1.0.0",
+  "description": "Phoenix Contexts and Domain-Driven Design",
+  "main": "index.js",
+  "dependencies": {
+    "decktape": "^2.8.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "decktape": "decktape -s 1440x811 http://localhost:5000 slides.pdf"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andrewhao/beautiful-systems-with-phoenix-contexts-talk.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/andrewhao/beautiful-systems-with-phoenix-contexts-talk/issues"
+  },
+  "homepage": "https://github.com/andrewhao/beautiful-systems-with-phoenix-contexts-talk#readme"
+}
