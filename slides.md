@@ -68,15 +68,83 @@ class: middle center
 
 #### The solution?
 
-# Abstractions
-
-a.k.a. modularization, or encapsulation
+# Modularization
 
 ???
 
 Science shows we can keep everything between four to seven things in memory at once!
 
 At certain point, you need to introduce abstraction layers
+
+---
+
+class: middle
+
+#### A blast from the past 🕰
+
+### Information hiding
+
+[*D.L. Parnas - "On the Criteria to Be Used in Decomposing Systems into Modules"*](https://www.cs.umd.edu/class/spring2003/cmsc838p/Design/criteria.pdf)
+
+???
+
+So I went looking for some inspiration, and learned about Parnas' work
+about modularization in the 1970s, words that stand still today.
+
+---
+
+class: middle center background-image-contain background-white
+
+background-image: url(images/parnas-paper.png)
+
+???
+
+
+In this paper, he took a look at a program that did text processing and
+compared two approaches - one that divided up its processing
+responsibilities by its procedural components, do A, B, then C, and
+another one that was responsible for the individual design decisions to
+do various things like scan for words, storing data in internal data
+structures, etc.
+
+It might go without saying, but the second one was found much more
+flexible and elegant. He said that the second way allowed the user to
+change internal decisions like how lines were stored in memory or on
+disk in a particular data structure would require minimal changes,
+whereas in the first, if you changed the data structure backing the word
+list you'd have to change several modules.
+
+---
+
+class: middle
+
+"We propose instead that one begins with a **list of difficult design decisions** or **design decisions which are likely to change**.
+
+"Each module is then designed to **hide such a decision from the others.**" (Emphasis added)
+
+---
+
+class: middle center
+
+# High cohesion
+
+Concepts that belong together are likely to change together as a unit
+
+---
+
+class: middle center
+
+# Loose coupling
+
+Minimal dependencies on external systems
+
+Hide implementation details to outside callers
+
+???
+
+Contexts have minimal dependencies on external systems (like HTTP, Plug, etc)
+
+Contexts hide implementation details from external callers (like Ecto schemas)
 
 ---
 
@@ -108,29 +176,6 @@ class: middle
 
 Elixir modules that group system functionality by business domain
 
----
-
-class: middle center
-
-# High cohesion
-
-Concepts that belong together are likely to change together as a unit
-
----
-
-class: middle center
-
-# Loose coupling
-
-Minimal dependencies on external systems
-
-Hide implementation details to outside callers
-
-???
-
-Contexts have minimal dependencies on external systems (like HTTP, Plug, etc)
-
-Contexts hide implementation details from external callers (like Ecto schemas)
 
 ---
 
@@ -143,6 +188,45 @@ Create a `User` resource in the `Identity` context
 ```bash
 $ mix phx.gen.html Identity User users \
     name:string email:string
+```
+
+---
+
+class: background-color-code
+
+### Follow the scaffold
+
+Create a `User` resource in the `Identity` context
+
+```bash
+$ mix phx.gen.html `Identity` User users \
+    name:string email:string
+```
+
+---
+
+class: background-color-code
+
+### Follow the scaffold
+
+Create a `User` resource in the `Identity` context
+
+```bash
+$ mix phx.gen.html Identity `User` users \
+    name:string email:string
+```
+
+---
+
+class: background-color-code
+
+### Follow the scaffold
+
+Create a `User` resource in the `Identity` context
+
+```bash
+$ mix phx.gen.html Identity User `users` \
+    `name:string email:string`
 ```
 
 ---
@@ -270,13 +354,9 @@ class: middle center
 
 ---
 
-class: middle center
+class: middle
 
-## How will I know if my context is getting too big or unwieldy?
-
----
-
-class: middle center
+#### 💭 Our fundamental question
 
 # How do we design system boundaries?
 
@@ -546,6 +626,18 @@ background-image: url(images/context-map-4.png)
 
 ---
 
+class: middle
+
+#### 👏 Take a step back
+
+## You've discovered your domains!
+
+The **Context Map** points us to our business domains!
+
+These may map to real organization structures (Conway's Law)
+
+---
+
 
 ## Ubiquitous Language
 
@@ -605,7 +697,7 @@ Powerful modeling tool, and keeps your product in sync with the business stakeho
 
 class: middle
 
-#### In the I'm Being Serious Department
+#### 👔 In the I'm Being Serious Department
 
 ## Become Language Addicts
 
@@ -633,11 +725,11 @@ class: background-color-code
 
 ```elixir
 defmodule AutoMaxx.Inspection do
-  def get_vehicle!() do: ...
-  def list_vehicles() do: ...
-  def update_vehicle() do: ...
+  def get_`vehicle`!() do: ...
+  def list_`vehicles`() do: ...
+  def update_`vehicle`() do: ...
 
-  def get_mechanic!() do: ...
+  def get_`mechanic`!() do: ...
 
   #...
 end
@@ -651,8 +743,8 @@ class: background-color-code
 
 ```elixir
 defmodule AutoMaxx.Inspection do
-  def add_vehicle_to_garage_queue(vehicle) do: ...
-  def rate_vehicle(vehicle, mechanic, inspection_rating) do: ...
+  def `add_vehicle_to_garage_queue`(vehicle) do: ...
+  def `rate_vehicle`(vehicle, mechanic, inspection_rating) do: ...
 end
 ```
 
@@ -689,10 +781,59 @@ defmodule AutoMaxx.VehicleInspectionRatingController do
 end
 ```
 
-???
+---
 
-Imagine a User -> Vehicle -> Inspectionrating
+class: background-color-code small-code
 
+```elixir
+defmodule AutoMaxx.VehicleInspectionRatingController do
+  def update(conn, %{
+        user_id: user_id, vehicle_id: vehicle_id, rating: new_rating
+      }) do
+*   with user <- Repo.get_by(User, user_id),
+*        vehicle <-
+*          Repo.get_by(Vehicle, vehicle_id)
+*          |> Repo.preload(:rating),
+         :ok <- InspectionRatingPolicy.editable_by?(vehicle, user) do
+*     inspection_rating =
+*       vehicle.rating
+*       |> rating.changeset(%{value: new_rating})
+*       |> Repo.insert!()
+
+      render(conn, "show.html", inspection_rating: inspection_rating)
+    else
+      render(conn, "error.html", message: "Oops!")
+    end
+  end
+end
+```
+
+---
+
+class: background-color-code small-code
+
+```elixir
+defmodule AutoMaxx.VehicleInspectionRatingController do
+  def update(conn, %{
+        user_id: user_id, vehicle_id: vehicle_id, rating: new_rating
+      }) do
+    with user <- Repo.get_by(User, user_id),
+         vehicle <-
+           Repo.get_by(Vehicle, vehicle_id)
+           |> Repo.preload(:rating),
+*        :ok <- InspectionRatingPolicy.editable_by?(vehicle, user) do
+      inspection_rating =
+        vehicle.rating
+        |> rating.changeset(%{value: new_rating})
+        |> Repo.insert!()
+
+      render(conn, "show.html", inspection_rating: inspection_rating)
+    else
+      render(conn, "error.html", message: "Oops!")
+    end
+  end
+end
+```
 
 ---
 
@@ -777,9 +918,9 @@ defmodule AutoMaxx.VehicleInspectionRatingController do
   def update(conn, %{
     user_id: user_id, vehicle_id: vehicle_id, rating: new_rating
   }) do
-    with user <- Identity.get_user(user_id),
-         vehicle <- Inspection.get_vehicle(vehicle_id),
-         {:ok, rating} <- Inspection.rate_vehicle(vehicle, user, new_rating) do
+    with user <- `Identity.get_user(user_id)`,
+         vehicle <- `Inspection.get_vehicle(vehicle_id)`,
+         {:ok, rating} <- `Inspection.rate_vehicle(vehicle, user, new_rating)` do
       render(conn, "show.html", inspection_rating: rating)
     else
       render(conn, "error.html", message: "Oops!")
@@ -843,7 +984,8 @@ Mix domain models between contexts
 
 ```elixir
 defmodule AutoMaxx.Inspection do
-  def rate_vehicle(%Identity.User{} = user, vehicle, rating) do: ...
+  def rate_vehicle(%AutoMaxx.`Identity`.User{} = user,
+                   vehicle, rating) do: ...
 end
 ```
 
@@ -877,9 +1019,39 @@ Useful for **Read-Only** use cases
 defmodule AutoMaxx.Marketing.Visitor do
   defstruct [:handle, :uuid]
 end
+```
+
+---
+
+##### Convert a `Identity.User` to a `Marketing.Visitor`
+
+```elixir
+defmodule AutoMaxx.`Marketing.Visitor` do
+  defstruct [:handle, :uuid]
+end
 
 defmodule AutoMaxx.Marketing do
   def visitor_for_user(%AutoMaxx.Identity.User{} = user) do
+    new_mapping = user
+      |> Map.from_struct()
+      |> Map.delete(:email)
+      |> Map.put(:handle, user.email)
+    struct(AutoMaxx.`Marketing.Visitor`, new_mapping)
+  end
+end
+```
+
+---
+
+##### Convert a `Identity.User` to a `Marketing.Visitor`
+
+```elixir
+defmodule AutoMaxx.Marketing.Visitor do
+  defstruct [:handle, :uuid]
+end
+
+defmodule AutoMaxx.Marketing do
+  def visitor_for_user(`%AutoMaxx.Identity.User{}` = user) do
     new_mapping = user
       |> Map.from_struct()
       |> Map.delete(:email)
@@ -888,10 +1060,6 @@ defmodule AutoMaxx.Marketing do
   end
 end
 ```
-
-???
-
-Idea is that your semantics for your internal concept are more fluid and in line with the business. The other idea is that you can reformat data to your use case
 
 ---
 
@@ -907,6 +1075,60 @@ defmodule AutoMaxx.Marketing.EmailSubscriptionController do
 
     # Then proceed to perform the domain action
     |> Marketing.subscribe_visitor_to_mailchimp(%{payload: payload})
+  end
+end
+```
+
+---
+
+class: small-code middle
+
+```elixir
+defmodule AutoMaxx.Marketing.EmailSubscriptionController do
+  def create(conn, %{user_id: user_id, payload: payload}) do
+*   Identity.get_user(user_id)
+
+    # Convert the concept at the boundaries
+    |> Marketing.visitor_for_user()
+
+    # Then proceed to perform the domain action
+    |> Marketing.subscribe_visitor_to_mailchimp(%{payload: payload})
+  end
+end
+```
+
+---
+
+class: small-code middle
+
+```elixir
+defmodule AutoMaxx.Marketing.EmailSubscriptionController do
+  def create(conn, %{user_id: user_id, payload: payload}) do
+    Identity.get_user(user_id)
+
+    # Convert the concept at the boundaries
+*   |> Marketing.visitor_for_user()
+
+    # Then proceed to perform the domain action
+    |> Marketing.subscribe_visitor_to_mailchimp(%{payload: payload})
+  end
+end
+```
+
+---
+
+class: small-code middle
+
+```elixir
+defmodule AutoMaxx.Marketing.EmailSubscriptionController do
+  def create(conn, %{user_id: user_id, payload: payload}) do
+    Identity.get_user(user_id)
+
+    # Convert the concept at the boundaries
+    |> Marketing.visitor_for_user()
+
+    # Then proceed to perform the domain action
+*   |> Marketing.subscribe_visitor_to_mailchimp(%{payload: payload})
   end
 end
 ```
@@ -968,14 +1190,14 @@ class: small-code middle
 ```elixir
 defmodule AutoMaxx.Inspection do
   def create_mechanic_from_user(
-        %AutoMaxx.Identity.User{} = user,
+*       %AutoMaxx.Identity.User{} = user,
         is_contractor
       ) do
-    %AutoMaxx.Inspection.Mechanic{
-      is_contractor: is_contractor,
-      user: user
-    }
-    |> Repo.insert!()
+*   %AutoMaxx.Inspection.Mechanic{
+*     is_contractor: is_contractor,
+*     user: user
+*   }
+*   |> Repo.insert!()
   end
 
   def mechanic_for_user(user) do
@@ -1077,7 +1299,7 @@ end
 
 ```elixir
 defmodule AutoMaxx.Inspection do
-  def update_rating(rating_id, new_rating) do...
+  def update_rating(`rating_id`, new_rating) do...
 end
 ```
 --
@@ -1085,7 +1307,7 @@ end
 
 ```elixir
 defmodule AutoMaxx.Inspection do
-  def rate_vehicle(vehicle_id, new_rating) do: ...
+  def rate_vehicle(`vehicle_id`, new_rating) do: ...
 end
 ```
 
@@ -1093,7 +1315,7 @@ end
 
 ### Leverage Aggregate Roots
 
-Minimize your **Aggregate Roots** in your context.
+Expose only **Aggregate Roots** in your context.
 
 Passing Aggregates around simplifies your APIs
 
@@ -1127,6 +1349,59 @@ end
 
 ---
 
+## Where is the coupling here?
+
+```elixir
+# lib/automaxx/identity/identity.ex
+defmodule AutoMaxx.Identity do
+  def create_user(...) do
+    do_create_user()
+*   |> AutoMaxx.Inspection.maybe_create_mechanic()
+    |> AutoMaxx.Marketing.subscribe_user_to_email_list()
+    |> AutoMaxx.Analytics.track_event('user_created')
+  end
+end
+```
+
+---
+
+## Where is the coupling here?
+
+```elixir
+# lib/automaxx/identity/identity.ex
+defmodule AutoMaxx.Identity do
+  def create_user(...) do
+    do_create_user()
+    |> AutoMaxx.Inspection.maybe_create_mechanic()
+*   |> AutoMaxx.Marketing.subscribe_user_to_email_list()
+    |> AutoMaxx.Analytics.track_event('user_created')
+  end
+end
+```
+
+---
+
+## Where is the coupling here?
+
+```elixir
+# lib/automaxx/identity/identity.ex
+defmodule AutoMaxx.Identity do
+  def create_user(...) do
+    do_create_user()
+    |> AutoMaxx.Inspection.maybe_create_mechanic()
+    |> AutoMaxx.Marketing.subscribe_user_to_email_list()
+*   |> AutoMaxx.Analytics.track_event('user_created')
+  end
+end
+```
+
+---
+class: background-image-contain
+
+background-image: url('images/event-bus-one.png')
+
+---
+
 ## Publish facts (domain events) over a bus
 
 Interested contexts can subscribe to domain events
@@ -1148,6 +1423,11 @@ Marketing context puts the user on the email marketing list
 Inspection context creates a corresponding `Mechanic` if the user is one
 
 Analytics context publishes metric to Google Analytics
+
+---
+class: background-image-contain
+
+background-image: url('images/event-bus-two.png')
 
 ---
 
@@ -1185,6 +1465,28 @@ end
 
 class: small-code middle
 
+```elixir
+# lib/automaxx/identity/identity.ex
+defmodule AutoMaxx.Identity do
+  def create_user(...) do
+    do_create_user()
+    |> `publish_event(:"identity.user.created")`
+  end
+
+  use EventBus.EventSource
+
+* defp publish_event(%User{} = user, event_name) do
+*   EventSource.notify %{id: UUID.uuid4(), topic: event_name} do
+*     %{user: user}
+*   end
+* end
+end
+```
+
+---
+
+class: small-code middle
+
 ##### In each context, create an `EventHandler` module.
 
 ```elixir
@@ -1194,6 +1496,25 @@ defmodule AutoMaxx.Marketing.EventHandler do
     %{data: %{user: user}} = EventBus.fetch_event({event_name, event_id})
 
     AutoMaxx.Marketing.subscribe_user_to_email_list(user)
+  end
+
+  def process({:"some.other.event" = event_name, event_id}) do: ...
+end
+```
+
+---
+
+class: small-code middle
+
+##### In each context, create an `EventHandler` module.
+
+```elixir
+# lib/automaxx/marketing/event_handler.ex
+defmodule AutoMaxx.Marketing.EventHandler do
+* def process({:"identity.user.created" = event_name, event_id}) do
+    %{data: %{user: user}} = EventBus.fetch_event({event_name, event_id})
+
+*   AutoMaxx.Marketing.subscribe_user_to_email_list(user)
   end
 
   def process({:"some.other.event" = event_name, event_id}) do: ...
@@ -1267,7 +1588,7 @@ class: middle center
 
 ## Listen to the business
 
-(Build a **Context Map**)
+(Build a **Context Map** and a **Glossary**)
 
 ---
 
@@ -1275,7 +1596,7 @@ class: middle center
 
 ## Strict boundaries
 
-Keep internal concepts isolated behind a context
+**Hide internal details** behind a context
 
 ---
 
@@ -1283,31 +1604,27 @@ class: middle center
 
 ## Linguistic precision & domain clarity
 
-Embrace the nuances of our domain models
+**Embrace the nuances** of our domain models
 
 ---
 
 class: middle center
 
-## Ship aggregates around between contexts
+## Practical architecture tools
 
-Thus simplifying the operational compexity of your data
+Concept sharing & anti-corruption layers
 
----
+Ship aggregates around between contexts
 
-class: middle center
-
-## Use an event bus
-
-Decouple contexts even further, with nice scalability advantages
+Use an event bus
 
 ---
 
 class: middle center
 
-## Lean on types, pattern matching and typespecs
+## Used the full power of the BEAM
 
-Elixir gives us great tools to enforce data integrity and system boundaries
+Lean on message passing, OTP, pattern matching and typespecs
 
 ---
 
